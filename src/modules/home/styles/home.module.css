@@ -3,6 +3,13 @@
   background-color: var(--color-bg);
 }
 
+.containerFull {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -13,6 +20,9 @@
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--color-primary);
@@ -72,4 +82,39 @@
 .description {
   color: var(--color-text-muted);
   margin: 0;
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 2rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.tab {
+  padding: 0.75rem 1.25rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab:hover {
+  color: var(--color-text);
+}
+
+.tabActive {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 500;
+}
+
+.editorWrapper {
+  flex: 1;
+  overflow: hidden;
 }

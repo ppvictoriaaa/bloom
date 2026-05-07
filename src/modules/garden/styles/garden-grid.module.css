@@ -1,0 +1,28 @@
+.viewport {
+  flex: 1;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-grid-viewport-bg);
+}
+
+.grid {
+  position: relative;
+  background-color: var(--color-grid-bg);
+  background-image:
+    linear-gradient(to right, var(--major-color, var(--color-grid-line-major)) var(--major-width, 1px), transparent var(--major-width, 1px)),
+    linear-gradient(to bottom, var(--major-color, var(--color-grid-line-major)) var(--major-width, 1px), transparent var(--major-width, 1px)),
+    linear-gradient(to right, var(--color-grid-line-minor) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-grid-line-minor) 1px, transparent 1px);
+  background-size:
+    var(--major-size) var(--major-size),
+    var(--major-size) var(--major-size),
+    var(--minor-size) var(--minor-size),
+    var(--minor-size) var(--minor-size);
+  border-right: var(--major-width, 1px) solid var(--major-color, var(--color-grid-line-major));
+  border-bottom: var(--major-width, 1px) solid var(--major-color, var(--color-grid-line-major));
+}
+
+.gridOver {
+  background-color: var(--color-grid-over);
+}
