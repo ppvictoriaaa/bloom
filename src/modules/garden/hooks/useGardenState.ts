@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { PlacedPlant, PendingDrop, PlotType, PlacementRules } from '../types/garden.types';
+import type { PlacedPlant, PendingDrop } from '../types/garden.types';
 import {
   SCALE_STEP,
   clampScale,
@@ -8,7 +8,6 @@ import {
   DEFAULT_PLOT_HEIGHT_M,
 } from '../utils/grid.utils';
 import type { PlotScale } from '../utils/grid.utils';
-import { DEFAULT_PLACEMENT_RULES } from '../utils/plant-overlap.utils';
 
 export const useGardenState = () => {
   const [placedPlants, setPlacedPlants] = useState<PlacedPlant[]>([]);
@@ -17,11 +16,12 @@ export const useGardenState = () => {
   const [plotScale, setPlotScale] = useState<PlotScale>(DEFAULT_PLOT_SCALE);
   const [plotWidthM, setPlotWidthM] = useState(DEFAULT_PLOT_WIDTH_M);
   const [plotHeightM, setPlotHeightM] = useState(DEFAULT_PLOT_HEIGHT_M);
-  const [plotType, setPlotType] = useState<PlotType>('vegetable');
-  const [placementRules, setPlacementRules] = useState<PlacementRules>(DEFAULT_PLACEMENT_RULES);
-
-  const updatePlacementRules = (partial: Partial<PlacementRules>) =>
-    setPlacementRules((prev) => ({ ...prev, ...partial }));
+  // Tracks what the user actually wants — not inflated by scale minimums.
+  // plotWidthM/plotHeightM = max(userDimensions, currentScale.metersPerCell).
+  const [userDimensions, setUserDimensions] = useState({
+    w: DEFAULT_PLOT_WIDTH_M,
+    h: DEFAULT_PLOT_HEIGHT_M,
+  });
 
   const addPlant = (plant: Omit<PlacedPlant, 'id'>) => {
     setPlacedPlants((prev) => [...prev, { ...plant, id: crypto.randomUUID() }]);
@@ -42,14 +42,15 @@ export const useGardenState = () => {
   const zoomOut = () => setScale((prev) => clampScale(prev - SCALE_STEP));
 
   const setPlotDimensions = (w: number, h: number) => {
+    setUserDimensions({ w, h });
     setPlotWidthM(w);
     setPlotHeightM(h);
   };
 
   const changePlotScale = (newScale: PlotScale) => {
     setPlotScale(newScale);
-    setPlotWidthM((prev) => Math.max(prev, newScale.metersPerCell));
-    setPlotHeightM((prev) => Math.max(prev, newScale.metersPerCell));
+    setPlotWidthM(Math.max(userDimensions.w, newScale.metersPerCell));
+    setPlotHeightM(Math.max(userDimensions.h, newScale.metersPerCell));
   };
 
   return {
@@ -59,16 +60,12 @@ export const useGardenState = () => {
     plotScale,
     plotWidthM,
     plotHeightM,
-    plotType,
-    placementRules,
     addPlant,
     movePlant,
     updatePlant,
     setPendingDrop,
     changePlotScale,
     setPlotDimensions,
-    setPlotType,
-    updatePlacementRules,
     zoomIn,
     zoomOut,
   };

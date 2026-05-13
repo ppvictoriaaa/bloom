@@ -1,15 +1,22 @@
-import type { PlacedPlant, PlantCategory, PlacementRules } from '../types/garden.types';
+import type { PlacedPlant, PlantCategory } from '../types/garden.types';
 import { getSnapStep } from './grid.utils';
 
-export const SAFE_CROP_GAP_M = 0.6;
-export const MIN_TREE_GAP_M = 1.0;
-export const SAFE_TREE_GAP_M = 2.0;
-export const MAX_TREE_GAP_M = 5.0;
-
-export const DEFAULT_PLACEMENT_RULES: PlacementRules = {
-  minCropGapM: SAFE_CROP_GAP_M,
-  minTreeGapM: SAFE_TREE_GAP_M,
-};
+export const MIN_DISTANCE_RULES = {
+  sameType: {
+    tree: 4,
+    vegetable: 0.4,
+    berry: 0.7,
+    flower: 0.3,
+    herb: 0.3,
+  },
+  differentTypes: {
+    tree: { vegetable: 2, berry: 2, flower: 1.5, herb: 1.5 },
+    vegetable: { tree: 2, berry: 0.7, flower: 0.4, herb: 0.3 },
+    berry: { tree: 2, vegetable: 0.7, flower: 0.5, herb: 0.5 },
+    flower: { tree: 1.5, vegetable: 0.4, berry: 0.5, herb: 0.3 },
+    herb: { tree: 1.5, vegetable: 0.3, berry: 0.5, flower: 0.3 },
+  },
+} as const;
 
 export interface PlantBounds {
   x: number;
@@ -36,38 +43,52 @@ export const getPlantBounds = (
   };
 };
 
-const getRequiredGap = (
-  incoming: PlantBounds,
-  existing: PlantBounds,
-  rules: PlacementRules,
-): number => {
-  if (incoming.plantId === existing.plantId) return 0;
-  const isTree = incoming.category === 'tree' || existing.category === 'tree';
-  return isTree ? rules.minTreeGapM : rules.minCropGapM;
+const getRequiredGap = (a: PlantBounds, b: PlantBounds): number => {
+  const catA = a.category as string;
+  const catB = b.category as string;
+  if (!catA || !catB) return 0.3;
+  const same = MIN_DISTANCE_RULES.sameType as Record<string, number>;
+  const diff = MIN_DISTANCE_RULES.differentTypes as Record<string, Record<string, number>>;
+  if (catA === catB) return same[catA] ?? 0.3;
+  return diff[catA]?.[catB] ?? 0.3;
 };
 
+const boundsOverlap = (a: PlantBounds, b: PlantBounds, gap: number): boolean =>
+  !(
+    a.x + a.w + gap <= b.x ||
+    a.x >= b.x + b.w + gap ||
+    a.y + a.h + gap <= b.y ||
+    a.y >= b.y + b.h + gap
+  );
+
+// Blocks only physical bounding-box overlap (gap = 0). Distance warnings are handled separately.
 export const isPlacementValid = (
   incoming: PlantBounds,
   existingPlants: PlacedPlant[],
   excludeId?: string,
-  rules: PlacementRules = DEFAULT_PLACEMENT_RULES,
 ): boolean => {
   for (const plant of existingPlants) {
     if (plant.id === excludeId) continue;
-
     const existing = getPlantBounds(plant);
-    const gap = getRequiredGap(incoming, existing, rules);
-
-    const overlaps = !(
-      incoming.x + incoming.w + gap <= existing.x ||
-      incoming.x >= existing.x + existing.w + gap ||
-      incoming.y + incoming.h + gap <= existing.y ||
-      incoming.y >= existing.y + existing.h + gap
-    );
-
-    if (overlaps) return false;
+    if (boundsOverlap(incoming, existing, 0)) return false;
   }
   return true;
+};
+
+export const getViolatingIds = (placedPlants: PlacedPlant[]): Set<string> => {
+  const violated = new Set<string>();
+  for (let i = 0; i < placedPlants.length; i++) {
+    for (let j = i + 1; j < placedPlants.length; j++) {
+      const a = getPlantBounds(placedPlants[i]);
+      const b = getPlantBounds(placedPlants[j]);
+      const gap = getRequiredGap(a, b);
+      if (boundsOverlap(a, b, gap)) {
+        violated.add(placedPlants[i].id);
+        violated.add(placedPlants[j].id);
+      }
+    }
+  }
+  return violated;
 };
 
 // Scans candidate positions (snapped to cell grid) and returns nearest valid one
@@ -80,7 +101,6 @@ export const findFreePosition = (
   plotWidthM: number,
   plotHeightM: number,
   metersPerCell: number,
-  rules: PlacementRules = DEFAULT_PLACEMENT_RULES,
   excludeId?: string,
 ): { x: number; y: number } | null => {
   const plantRows = Math.ceil(plant.count / plant.plantsPerRow);
@@ -94,7 +114,6 @@ export const findFreePosition = (
       candidates.push({ x: cx, y: cy, dist: Math.abs(cx - plant.x) + Math.abs(cy - plant.y) });
     }
   }
-  // Also allow placement when plot is smaller than the plant area
   if (candidates.length === 0) {
     candidates.push({ x: 0, y: 0, dist: Math.abs(plant.x) + Math.abs(plant.y) });
   }
@@ -102,7 +121,7 @@ export const findFreePosition = (
 
   for (const pos of candidates) {
     const bounds = getPlantBounds({ ...plant, x: pos.x, y: pos.y });
-    if (isPlacementValid(bounds, existingPlants, excludeId, rules)) {
+    if (isPlacementValid(bounds, existingPlants, excludeId)) {
       return { x: pos.x, y: pos.y };
     }
   }

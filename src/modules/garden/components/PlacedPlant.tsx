@@ -1,3 +1,5 @@
+import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import type { PlacedPlant as PlacedPlantType } from '../types/garden.types';
@@ -11,16 +13,65 @@ interface Props {
   plant: PlacedPlantType;
   cellSize: number;
   plotScale: PlotScale;
+  hasViolation: boolean;
   onEdit: (plant: PlacedPlantType) => void;
   onHover: (id: string | null) => void;
 }
 
 const DETAIL_THRESHOLD_PX = 10;
-// always show every plant icon if total count is ≤ this value.
 const SHOW_ALL_THRESHOLD = 30;
 const MIN_BOX_PX = 24;
 
-export const PlacedPlant = ({ plant, cellSize, plotScale, onEdit, onHover }: Props) => {
+const TOOLTIP_MESSAGE =
+  'Planting these plants too close may reduce growth, increase competition for water and nutrients, or raise the risk of disease.';
+const TOOLTIP_WIDTH = 214;
+const TOOLTIP_GAP = 8;
+
+const WarningBadge = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ left: number; top?: number; bottom?: number } | null>(null);
+
+  const show = () => {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    let left = r.left;
+    if (left + TOOLTIP_WIDTH > window.innerWidth - 8) {
+      left = window.innerWidth - TOOLTIP_WIDTH - 8;
+    }
+    const above = r.top > 130;
+    setPos(
+      above
+        ? { left, bottom: window.innerHeight - r.top + TOOLTIP_GAP }
+        : { left, top: r.bottom + TOOLTIP_GAP },
+    );
+  };
+
+  return (
+    <>
+      <div
+        ref={ref}
+        className={styles.warningBadge}
+        onMouseEnter={show}
+        onMouseLeave={() => setPos(null)}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        !
+      </div>
+      {pos &&
+        createPortal(
+          <div
+            className={styles.warningTooltip}
+            style={{ left: pos.left, top: pos.top, bottom: pos.bottom, width: TOOLTIP_WIDTH }}
+          >
+            {TOOLTIP_MESSAGE}
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+};
+
+export const PlacedPlant = ({ plant, cellSize, plotScale, hasViolation, onEdit, onHover }: Props) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `placed-${plant.id}`,
     data: { type: 'existing', placedId: plant.id, x: plant.x, y: plant.y },
@@ -28,12 +79,10 @@ export const PlacedPlant = ({ plant, cellSize, plotScale, onEdit, onHover }: Pro
 
   const { metersPerCell } = plotScale;
 
-  // position: plant.x / plant.y are meters -> convert to pixels
   const leftPx = (plant.x / metersPerCell) * cellSize;
   const topPx = (plant.y / metersPerCell) * cellSize;
 
   const plantRows = Math.ceil(plant.count / plant.plantsPerRow);
-  // pixels per spacing unit at current scale
   const spacingPx = (plant.spacing / metersPerCell) * cellSize;
 
   const showAll = plant.count <= SHOW_ALL_THRESHOLD;
@@ -44,12 +93,9 @@ export const PlacedPlant = ({ plant, cellSize, plotScale, onEdit, onHover }: Pro
   const physicalW = plant.plantsPerRow * spacingPx;
   const physicalH = plantRows * spacingPx;
 
-  // Ensure minimum visible box
   const totalWidth = Math.max(MIN_BOX_PX, physicalW);
   const totalHeight = Math.max(MIN_BOX_PX, physicalH);
 
-  // Detail mode: real spacing positions - only when ALL plants are shown (count ≤ 30)
-  // Compact mode: icons distributed evenly — used when count > 30 or spacing is too small
   const isDetailMode = spacingPx >= DETAIL_THRESHOLD_PX && showAll;
   const stepX = isDetailMode ? spacingPx : totalWidth / displayCols;
   const stepY = isDetailMode ? spacingPx : totalHeight / displayRows;
@@ -129,6 +175,8 @@ export const PlacedPlant = ({ plant, cellSize, plotScale, onEdit, onHover }: Pro
             {plantRows}×{plant.plantsPerRow}
           </div>
         )}
+
+        {hasViolation && <WarningBadge />}
       </div>
     </div>
   );

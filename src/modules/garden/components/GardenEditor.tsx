@@ -36,20 +36,17 @@ export const GardenEditor = () => {
     plotScale,
     plotWidthM,
     plotHeightM,
-    placementRules,
     addPlant,
     movePlant,
     updatePlant,
     setPendingDrop,
     changePlotScale,
     setPlotDimensions,
-    updatePlacementRules,
     zoomIn,
     zoomOut,
   } = useGardenState();
 
   const [activeDragData, setActiveDragData] = useState<DragData | null>(null);
-  const [overlapMsg, setOverlapMsg] = useState<string | null>(null);
   const [noSpaceError, setNoSpaceError] = useState(false);
   const [editingPlant, setEditingPlant] = useState<PlacedPlant | null>(null);
 
@@ -66,11 +63,6 @@ export const GardenEditor = () => {
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
   );
-
-  const showOverlapMsg = (msg: string) => {
-    setOverlapMsg(msg);
-    setTimeout(() => setOverlapMsg(null), 3000);
-  };
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveDragData(event.active.data.current as DragData);
@@ -92,15 +84,6 @@ export const GardenEditor = () => {
       const { x, y } = screenToMeters(
         offsetX, offsetY, cellSizeRef.current, metersPerCell, plotWidthM, plotHeightM,
       );
-
-      const spaceCheck = findFreePosition(
-        { x, y, count: 1, plantsPerRow: 1, spacing: 0.5, plantId: '__check__', category: data.plant.category },
-        placedPlants, plotWidthM, plotHeightM, metersPerCell, placementRules,
-      );
-      if (!spaceCheck) {
-        setNoSpaceError(true);
-        return;
-      }
 
       setPendingDrop({
         plantId: data.plant._id,
@@ -129,15 +112,14 @@ export const GardenEditor = () => {
       const y = Math.max(0, Math.min(rawY, plotHeightM - hM));
 
       const newBounds = getPlantBounds({ ...plantToMove, x, y });
-      if (!isPlacementValid(newBounds, placedPlants, data.placedId, placementRules)) {
+      if (!isPlacementValid(newBounds, placedPlants, data.placedId)) {
         const freePos = findFreePosition(
           { ...plantToMove, x, y },
-          placedPlants, plotWidthM, plotHeightM, metersPerCell, placementRules,
+          placedPlants, plotWidthM, plotHeightM, metersPerCell,
           data.placedId,
         );
         if (freePos) {
           movePlant(data.placedId, freePos.x, freePos.y);
-          showOverlapMsg(`Too close — minimum gap is ${placementRules.minCropGapM} m. Moved to nearest valid position.`);
         } else {
           setNoSpaceError(true);
         }
@@ -158,14 +140,14 @@ export const GardenEditor = () => {
     };
 
     const bounds = getPlantBounds(clampedPlant);
-    if (isPlacementValid(bounds, placedPlants, undefined, placementRules)) {
+    if (isPlacementValid(bounds, placedPlants)) {
       addPlant(clampedPlant);
       setPendingDrop(null);
       return;
     }
 
     const freePos = findFreePosition(
-      clampedPlant, placedPlants, plotWidthM, plotHeightM, metersPerCell, placementRules,
+      clampedPlant, placedPlants, plotWidthM, plotHeightM, metersPerCell,
     );
     if (freePos) {
       addPlant({ ...clampedPlant, x: freePos.x, y: freePos.y });
@@ -196,18 +178,11 @@ export const GardenEditor = () => {
           plotScale={plotScale}
           plotWidthM={plotWidthM}
           plotHeightM={plotHeightM}
-          placementRules={placementRules}
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}
           onPlotScaleChange={changePlotScale}
           onDimensionsChange={setPlotDimensions}
-          onPlacementRulesChange={updatePlacementRules}
         />
-        {overlapMsg && (
-          <div className={styles.overlapBanner}>
-            {overlapMsg}
-          </div>
-        )}
         <GardenGrid
           placedPlants={placedPlants}
           plotConfig={plotConfig}

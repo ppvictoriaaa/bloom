@@ -106,6 +106,7 @@ export const PlantSettingsModal = ({
       plantId: pendingDrop.plantId,
       name: pendingDrop.name,
       slug: pendingDrop.slug,
+      category: pendingDrop.category,
       color: pendingDrop.color,
       imageUrl: pendingDrop.imageUrl,
       x: pendingDrop.x,

@@ -1,5 +1,3 @@
-export type PlotType = 'vegetable' | 'ornamental' | 'mixed';
-
 export interface PlotConfig {
   scale: number;
   plotScale: import('../utils/grid.utils').PlotScale;
@@ -7,12 +5,15 @@ export interface PlotConfig {
   plotHeightM: number;
 }
 
-export type PlantCategory = 'vegetable' | 'berry' | 'tree' | 'flower' | 'herb' | 'unknown';
+export const PlantCategory = {
+  TREE: 'tree',
+  VEGETABLE: 'vegetable',
+  BERRY: 'berry',
+  FLOWER: 'flower',
+  HERB: 'herb',
+} as const;
 
-export interface PlacementRules {
-  minCropGapM: number;
-  minTreeGapM: number;
-}
+export type PlantCategory = (typeof PlantCategory)[keyof typeof PlantCategory];
 
 export interface PlantData {
   _id: string;

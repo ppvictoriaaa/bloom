@@ -1,12 +1,6 @@
-import type { PlacementRules } from '../types/garden.types';
 import type { PlotScale } from '../utils/grid.utils';
 import { PlotScaleSelector } from './PlotScaleSelector';
 import { formatLength } from '../utils/grid.utils';
-import {
-  SAFE_CROP_GAP_M,
-  MIN_TREE_GAP_M,
-  SAFE_TREE_GAP_M,
-} from '../utils/plant-overlap.utils';
 import { SvgIcon } from '../../../components/ui/SvgIcon';
 import { icons } from '../../../components/ui/icons';
 import { theme } from '../../../styles/theme';
@@ -17,12 +11,10 @@ interface Props {
   plotScale: PlotScale;
   plotWidthM: number;
   plotHeightM: number;
-  placementRules: PlacementRules;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onPlotScaleChange: (scale: PlotScale) => void;
   onDimensionsChange: (widthM: number, heightM: number) => void;
-  onPlacementRulesChange: (partial: Partial<PlacementRules>) => void;
 }
 
 export const GardenToolbar = ({
@@ -30,12 +22,10 @@ export const GardenToolbar = ({
   plotScale,
   plotWidthM,
   plotHeightM,
-  placementRules,
   onZoomIn,
   onZoomOut,
   onPlotScaleChange,
   onDimensionsChange,
-  onPlacementRulesChange,
 }: Props) => {
   const { metersPerCell } = plotScale;
   const isKm = metersPerCell >= 1000;
@@ -54,10 +44,6 @@ export const GardenToolbar = ({
     const m = Math.max(metersPerCell, isKm ? val * 1000 : val);
     onDimensionsChange(plotWidthM, m);
   };
-
-  const { minCropGapM, minTreeGapM } = placementRules;
-  const cropGapWarning = minCropGapM < SAFE_CROP_GAP_M;
-  const treeGapWarning = minTreeGapM >= MIN_TREE_GAP_M && minTreeGapM < SAFE_TREE_GAP_M;
 
   return (
     <div className={styles.toolbar}>
@@ -98,56 +84,7 @@ export const GardenToolbar = ({
         <span className={styles.dim}>
           ({formatLength(plotWidthM)} × {formatLength(plotHeightM)})
         </span>
-
-        <span className={styles.separator} />
-        <span className={styles.label}>Crop gap</span>
-        <input
-          type="number"
-          className={styles.input}
-          min={0.1}
-          max={100}
-          step={0.1}
-          value={minCropGapM}
-          onChange={(e) =>
-            onPlacementRulesChange({ minCropGapM: Math.max(0.1, Number(e.target.value)) })
-          }
-          aria-label="Minimum gap between different crops"
-        />
-        <span className={styles.unit}>m</span>
-
-        <span className={styles.separator} />
-        <span className={styles.label}>Tree gap</span>
-        <input
-          type="number"
-          className={styles.input}
-          min={MIN_TREE_GAP_M}
-          max={100}
-          step={0.5}
-          value={minTreeGapM}
-          onChange={(e) =>
-            onPlacementRulesChange({ minTreeGapM: Math.max(MIN_TREE_GAP_M, Number(e.target.value)) })
-          }
-          aria-label="Minimum gap from trees"
-        />
-        <span className={styles.unit}>m</span>
       </div>
-
-      {(cropGapWarning || treeGapWarning) && (
-        <div className={styles.warnings}>
-          {cropGapWarning && (
-            <span className={styles.warningBanner}>
-              <SvgIcon icon={icons.warning} size={13} color={theme.colors.warningText} />
-              Warning: low spacing increases risk of infections.
-            </span>
-          )}
-          {treeGapWarning && (
-            <span className={styles.warningBanner}>
-              <SvgIcon icon={icons.warning} size={13} color={theme.colors.warningText} />
-              Warning: distance to trees is recommended to be 2-5 m.
-            </span>
-          )}
-        </div>
-      )}
     </div>
   );
 };

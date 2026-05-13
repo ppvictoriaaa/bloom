@@ -44,14 +44,15 @@ export const formatLength = (meters: number): string => {
 export const getCellSize = (scale: number): number =>
   Math.round(BASE_CELL_SIZE * scale);
 
-// Snap step in meters: fine-grained (max 1 m) so plants aren't stuck at full-cell increments.
-// At sub-meter scales it stays equal to metersPerCell.
+// Snap step in meters. Fine-grained so plants don't get stuck at full-cell increments.
+// Large-scale divisor is /100 (not /10) so that e.g. 100 m/cell → 1 m step,
+// keeping small plants moveable and findFreePosition candidate counts bounded (~10 K).
 export const getSnapStep = (metersPerCell: number): number => {
   if (metersPerCell <= 0.5) return 0.05;
   if (metersPerCell <= 1) return 0.1;
   if (metersPerCell <= 2) return 0.2;
   if (metersPerCell <= 5) return 0.5;
-  return Math.max(1, metersPerCell / 10);
+  return Math.max(1, metersPerCell / 100);
 };
 
 // Returns position snapped to snap grid, expressed in meters.

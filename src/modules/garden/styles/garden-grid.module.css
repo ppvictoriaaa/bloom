@@ -8,6 +8,7 @@
 
 .grid {
   position: relative;
+  overflow: hidden;
   background-color: var(--color-grid-bg);
   background-image:
     linear-gradient(to right, var(--major-color, var(--color-grid-line-major)) var(--major-width, 1px), transparent var(--major-width, 1px)),
