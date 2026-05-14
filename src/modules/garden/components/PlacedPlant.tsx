@@ -13,8 +13,12 @@ interface Props {
   plant: PlacedPlantType;
   cellSize: number;
   plotScale: PlotScale;
+  plotWidthM: number;
+  plotHeightM: number;
   hasViolation: boolean;
   onEdit: (plant: PlacedPlantType) => void;
+  onRemove: (id: string) => void;
+  onResize: (id: string, count: number, plantsPerRow: number, x: number, y: number) => void;
   onHover: (id: string | null) => void;
 }
 
@@ -71,35 +75,157 @@ const WarningBadge = () => {
   );
 };
 
-export const PlacedPlant = ({ plant, cellSize, plotScale, hasViolation, onEdit, onHover }: Props) => {
+type Corner = 'tl' | 'tr' | 'bl' | 'br';
+
+interface ResizeOrigin {
+  startX: number;
+  startY: number;
+  startW: number;
+  startH: number;
+  startPlantX: number;
+  startPlantY: number;
+  corner: Corner;
+}
+
+const CORNERS: Corner[] = ['tl', 'tr'];
+
+export const PlacedPlant = ({
+  plant,
+  cellSize,
+  plotScale,
+  plotWidthM,
+  plotHeightM,
+  hasViolation,
+  onEdit,
+  onRemove,
+  onResize,
+  onHover,
+}: Props) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `placed-${plant.id}`,
     data: { type: 'existing', placedId: plant.id, x: plant.x, y: plant.y },
   });
 
+  const resizeOrigin = useRef<ResizeOrigin | null>(null);
+  const [previewM, setPreviewM] = useState<{ w: number; h: number; x: number; y: number } | null>(null);
+
   const { metersPerCell } = plotScale;
 
-  const leftPx = (plant.x / metersPerCell) * cellSize;
-  const topPx = (plant.y / metersPerCell) * cellSize;
+  const displayX = previewM?.x ?? plant.x;
+  const displayY = previewM?.y ?? plant.y;
+  const leftPx = (displayX / metersPerCell) * cellSize;
+  const topPx = (displayY / metersPerCell) * cellSize;
 
   const plantRows = Math.ceil(plant.count / plant.plantsPerRow);
   const spacingPx = (plant.spacing / metersPerCell) * cellSize;
+
+  const baseWM = plant.plantsPerRow * plant.spacing;
+  const baseHM = plantRows * plant.spacing;
+
+  const displayWM = previewM?.w ?? baseWM;
+  const displayHM = previewM?.h ?? baseHM;
+
+  const totalWidth  = Math.max(MIN_BOX_PX, (displayWM / metersPerCell) * cellSize);
+  const totalHeight = Math.max(MIN_BOX_PX, (displayHM / metersPerCell) * cellSize);
 
   const showAll = plant.count <= SHOW_ALL_THRESHOLD;
   const displayRows = showAll ? plantRows : Math.min(plantRows, 6);
   const displayCols = showAll ? plant.plantsPerRow : Math.min(plant.plantsPerRow, 6);
   const isTruncated = !showAll;
 
-  const physicalW = plant.plantsPerRow * spacingPx;
-  const physicalH = plantRows * spacingPx;
-
-  const totalWidth = Math.max(MIN_BOX_PX, physicalW);
-  const totalHeight = Math.max(MIN_BOX_PX, physicalH);
-
   const isDetailMode = spacingPx >= DETAIL_THRESHOLD_PX && showAll;
   const stepX = isDetailMode ? spacingPx : totalWidth / displayCols;
   const stepY = isDetailMode ? spacingPx : totalHeight / displayRows;
   const iconSize = Math.max(4, Math.floor(Math.min(stepX, stepY) * 0.72));
+
+  // ── Resize handlers ────────────────────────────────────────────────────
+  const makeResizeDown = (corner: Corner) => (e: React.PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    resizeOrigin.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      startW: baseWM,
+      startH: baseHM,
+      startPlantX: plant.x,
+      startPlantY: plant.y,
+      corner,
+    };
+  };
+
+  const handleResizeMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const o = resizeOrigin.current;
+    if (!o) return;
+    const mPerPx = metersPerCell / cellSize;
+    const dx = (e.clientX - o.startX) * mPerPx;
+    const dy = (e.clientY - o.startY) * mPerPx;
+    const rightAnchor  = o.startPlantX + o.startW;
+    const bottomAnchor = o.startPlantY + o.startH;
+    const min = plant.spacing;
+
+    let newX = o.startPlantX;
+    let newY = o.startPlantY;
+    let newW: number;
+    let newH: number;
+
+    if (o.corner === 'br' || o.corner === 'tr') {
+      newW = Math.max(min, Math.min(o.startW + dx, plotWidthM - o.startPlantX));
+    } else {
+      newX = Math.max(0, Math.min(o.startPlantX + dx, rightAnchor - min));
+      newW = rightAnchor - newX;
+    }
+
+    if (o.corner === 'br' || o.corner === 'bl') {
+      newH = Math.max(min, Math.min(o.startH + dy, plotHeightM - o.startPlantY));
+    } else {
+      newY = Math.max(0, Math.min(o.startPlantY + dy, bottomAnchor - min));
+      newH = bottomAnchor - newY;
+    }
+
+    setPreviewM({ w: newW, h: newH, x: newX, y: newY });
+  };
+
+  const handleResizeUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const o = resizeOrigin.current;
+    if (!o) return;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    resizeOrigin.current = null;
+
+    const p = previewM;
+    setPreviewM(null);
+    if (!p) return;
+
+    const cellSnap  = metersPerCell;
+    const plantSnap = plant.spacing;
+    const fixedRight  = o.startPlantX + o.startW;
+    const fixedBottom = o.startPlantY + o.startH;
+
+    let snappedX = o.startPlantX;
+    let snappedY = o.startPlantY;
+    let snappedW: number;
+    let snappedH: number;
+
+    if (o.corner === 'tr') {
+      snappedW = Math.max(plantSnap, Math.round(p.w / plantSnap) * plantSnap);
+    } else {
+      snappedX = Math.max(0, Math.min(Math.round(p.x / cellSnap) * cellSnap, fixedRight - plantSnap));
+      snappedW = Math.max(plantSnap, Math.round((fixedRight - snappedX) / plantSnap) * plantSnap);
+    }
+
+    if (o.corner === 'bl') {
+      snappedH = Math.max(plantSnap, Math.round(p.h / plantSnap) * plantSnap);
+    } else {
+      snappedY = Math.max(0, Math.min(Math.round(p.y / cellSnap) * cellSnap, fixedBottom - plantSnap));
+      snappedH = Math.max(plantSnap, Math.round((fixedBottom - snappedY) / plantSnap) * plantSnap);
+    }
+
+    const newPlantsPerRow = Math.max(1, Math.round(snappedW / plantSnap));
+    const newRows         = Math.max(1, Math.round(snappedH / plantSnap));
+    onResize(plant.id, newRows * newPlantsPerRow, newPlantsPerRow, snappedX, snappedY);
+  };
+
+  const isResizing = previewM !== null;
 
   return (
     <div
@@ -119,7 +245,7 @@ export const PlacedPlant = ({ plant, cellSize, plotScale, hasViolation, onEdit, 
       onMouseLeave={() => onHover(null)}
     >
       <div
-        className={styles.area}
+        className={`${styles.area} ${isResizing ? styles.areaResizing : ''}`}
         style={{
           width: Math.round(totalWidth),
           height: Math.round(totalHeight),
@@ -129,7 +255,7 @@ export const PlacedPlant = ({ plant, cellSize, plotScale, hasViolation, onEdit, 
           }),
         }}
       >
-        {Array.from({ length: displayRows }).flatMap((_, row) =>
+        {!isResizing && Array.from({ length: displayRows }).flatMap((_, row) =>
           Array.from({ length: displayCols }).map((_, col) => {
             const idx = row * plant.plantsPerRow + col;
             if (idx >= plant.count) return null;
@@ -153,30 +279,55 @@ export const PlacedPlant = ({ plant, cellSize, plotScale, hasViolation, onEdit, 
           }),
         )}
 
-        <div className={styles.nameTag}>
-          {plant.name}
-          {isDetailMode ? ` · ${plant.count}` : ''}
-        </div>
+        {!isResizing && (
+          <>
+            <div className={styles.nameTag}>
+              {plant.name}
+              {isDetailMode ? ` · ${plant.count}` : ''}
+            </div>
 
-        <button
-          className={styles.editButton}
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(plant);
-          }}
-          aria-label="Edit plant"
-        >
-          <SvgIcon icon={icons.edit} size={10} color={theme.colors.plantText} />
-        </button>
+            <button
+              className={styles.removeButton}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); onRemove(plant.id); }}
+              aria-label="Remove plant"
+            >
+              ×
+            </button>
+            <button
+              className={styles.editButton}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); onEdit(plant); }}
+              aria-label="Edit plant"
+            >
+              <SvgIcon icon={icons.edit} size={10} color={theme.colors.plantText} />
+            </button>
 
-        {isTruncated && (
-          <div className={styles.badge}>
-            {plantRows}×{plant.plantsPerRow}
+            {isTruncated && (
+              <div className={styles.badge}>
+                {plantRows}×{plant.plantsPerRow}
+              </div>
+            )}
+
+            {hasViolation && <WarningBadge />}
+          </>
+        )}
+
+        {isResizing && (
+          <div className={styles.resizeLabel}>
+            {displayWM.toFixed(1)} × {displayHM.toFixed(1)} m
           </div>
         )}
 
-        {hasViolation && <WarningBadge />}
+        {CORNERS.map((corner) => (
+          <div
+            key={corner}
+            className={`${styles.resizeHandle} ${styles[`resizeHandle${corner.toUpperCase()}`]}`}
+            onPointerDown={makeResizeDown(corner)}
+            onPointerMove={handleResizeMove}
+            onPointerUp={handleResizeUp}
+          />
+        ))}
       </div>
     </div>
   );

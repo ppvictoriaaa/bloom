@@ -1,4 +1,5 @@
 import type { PlotScale } from '../utils/grid.utils';
+import type { AutoSaveStatus } from '../hooks/useGardenSave';
 import { PlotScaleSelector } from './PlotScaleSelector';
 import { formatLength } from '../utils/grid.utils';
 import { SvgIcon } from '../../../components/ui/SvgIcon';
@@ -12,6 +13,7 @@ interface Props {
   plotWidthM: number;
   plotHeightM: number;
   isSaving: boolean;
+  autoSaveStatus: AutoSaveStatus;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onPlotScaleChange: (scale: PlotScale) => void;
@@ -25,6 +27,7 @@ export const GardenToolbar = ({
   plotWidthM,
   plotHeightM,
   isSaving,
+  autoSaveStatus,
   onZoomIn,
   onZoomOut,
   onPlotScaleChange,
@@ -90,8 +93,14 @@ export const GardenToolbar = ({
         </span>
 
         <span className={styles.separator} />
+        {autoSaveStatus === 'saving' && <span className={styles.spinner} aria-label="Saving" />}
+        {autoSaveStatus === 'saved' && (
+          <svg className={styles.checkmark} viewBox="0 0 12 12" aria-label="Saved">
+            <polyline points="1.5,6 4.5,9.5 10.5,2.5" />
+          </svg>
+        )}
         <button className={styles.saveButton} onClick={onSave} disabled={isSaving}>
-          {isSaving ? 'Saving…' : 'Save'}
+          Save
         </button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { gardensApi, type GardenPayload, type GardenData } from '../../../api/gardens';
 import type { PlacedPlant } from '../types/garden.types';
@@ -23,32 +23,33 @@ type MutationPayload =
   | { type: 'create'; data: GardenPayload }
   | { type: 'update'; id: string; data: GardenPayload };
 
+export type AutoSaveStatus = 'idle' | 'saving' | 'saved';
+
 export const useGardenSave = (
   gardenState: GardenState,
   loadGarden: LoadGardenFn,
-  // null = new garden (blank editor, create on save)
-  // string = edit existing garden (auto-load, update on save)
   gardenId: string | null,
 ) => {
   const queryClient = useQueryClient();
   const [showNameModal, setShowNameModal] = useState(false);
   const [loadedGardenId, setLoadedGardenId] = useState<string | null>(null);
-  // Tracks the garden created this session so subsequent saves update it
   const [createdGardenId, setCreatedGardenId] = useState<string | null>(null);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveStatus>('idle');
 
   const { data: gardens = [], isLoading: isLoadingGarden } = useQuery({
     queryKey: ['gardens'],
     queryFn: () => gardensApi.getAll().then((r) => r.data),
   });
 
-  // The garden being edited:
-  // - gardenId prop is a string → use that specific garden
-  // - gardenId prop is null + we already created one → use the created garden
-  // - gardenId prop is null + nothing created → null (blank editor)
   const activeId = gardenId ?? createdGardenId;
   const garden = activeId ? (gardens.find((g) => g._id === activeId) ?? null) : null;
 
-  // Auto-load only when opening an existing garden (gardenId prop is a string)
+  // Use a ref so the auto-save timeout always reads the latest garden without
+  // including it as an effect dependency (avoids triggering on metadata-only changes)
+  const gardenRef = useRef(garden);
+  gardenRef.current = garden;
+
+  // Load the garden into the editor when opening an existing one
   useEffect(() => {
     if (gardenId && garden && garden._id !== loadedGardenId) {
       setLoadedGardenId(garden._id);
@@ -67,21 +68,48 @@ export const useGardenSave = (
         ? gardensApi.create(payload.data)
         : gardensApi.update(payload.id, payload.data),
     onSuccess: (response, variables) => {
-      if (variables.type === 'create') {
-        setCreatedGardenId(response.data._id);
-      }
+      if (variables.type === 'create') setCreatedGardenId(response.data._id);
       setShowNameModal(false);
+      setAutoSaveStatus('saved');
       queryClient.invalidateQueries({ queryKey: ['gardens'] });
     },
   });
 
+  const { placedPlants, plotWidthM, plotHeightM, plotScale } = gardenState;
+
   const buildPayload = (name: string): GardenPayload => ({
     name,
-    placedPlants: gardenState.placedPlants,
-    plotWidthM: gardenState.plotWidthM,
-    plotHeightM: gardenState.plotHeightM,
-    metersPerCell: gardenState.plotScale.metersPerCell,
+    placedPlants,
+    plotWidthM,
+    plotHeightM,
+    metersPerCell: plotScale.metersPerCell,
   });
+
+  // Auto-save: debounce 1.5 s after any state change, but only once a garden exists
+  useEffect(() => {
+    if (!gardenRef.current) return;
+
+    setAutoSaveStatus('idle');
+    const timer = setTimeout(() => {
+      const g = gardenRef.current;
+      if (!g) return;
+      setAutoSaveStatus('saving');
+      mutate({ type: 'update', id: g._id, data: buildPayload(g.name) });
+    }, 1500);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placedPlants, plotWidthM, plotHeightM, plotScale.metersPerCell]);
+
+  // Reset "saved" badge after 2 s
+  useEffect(() => {
+    if (autoSaveStatus !== 'saved') return;
+    const timer = setTimeout(() => setAutoSaveStatus('idle'), 2000);
+    return () => clearTimeout(timer);
+  }, [autoSaveStatus]);
+
+  // True only before first save and the user has made meaningful changes
+  const hasUnsavedChanges = !garden && placedPlants.length > 0;
 
   const saveGarden = () => {
     if (!garden) {
@@ -101,5 +129,14 @@ export const useGardenSave = (
 
   const dismissModal = () => setShowNameModal(false);
 
-  return { saveGarden, isSaving, isLoadingGarden, showNameModal, confirmSave, dismissModal };
+  return {
+    saveGarden,
+    isSaving,
+    isLoadingGarden,
+    showNameModal,
+    confirmSave,
+    dismissModal,
+    hasUnsavedChanges,
+    autoSaveStatus,
+  };
 };

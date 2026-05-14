@@ -87,6 +87,38 @@
   opacity: 0.7;
 }
 
+.spinner {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+  border: 1.5px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.checkmark {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: fadeOut 2s ease forwards;
+}
+
+@keyframes fadeOut {
+  0%, 55% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 .saveButton {
   padding: 0 12px;
   height: 28px;

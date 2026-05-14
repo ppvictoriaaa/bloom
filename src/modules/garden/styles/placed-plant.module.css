@@ -34,17 +34,18 @@
   display: block;
 }
 
-.editButton {
+.editButton,
+.removeButton {
   position: absolute;
   bottom: 2px;
-  right: 2px;
   width: 18px;
   height: 18px;
   border: none;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.9);
   color: var(--color-plant-text);
-  font-size: 10px;
+  font-size: 12px;
+  line-height: 1;
   cursor: pointer;
   display: none;
   align-items: center;
@@ -54,12 +55,26 @@
   transition: background 0.1s;
 }
 
-.area:hover .editButton {
+.editButton {
+  right: 2px;
+}
+
+.removeButton {
+  right: 22px;
+}
+
+.area:hover .editButton,
+.area:hover .removeButton {
   display: flex;
 }
 
 .editButton:hover {
   background: var(--color-surface);
+}
+
+.removeButton:hover {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 .badge {
@@ -111,4 +126,50 @@
   pointer-events: none;
   z-index: 9999;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.09);
+}
+
+.resizeHandle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 7;
+}
+
+.resizeHandleTR { top:    0; right: 0; cursor: nesw-resize; }
+.resizeHandleTL { top:    0; left:  0; cursor: nwse-resize; }
+
+.resizeHandle::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+}
+
+.resizeHandleTR::after { top:    2px; right: 2px; border-right:  2px solid var(--color-primary); border-top:    2px solid var(--color-primary); }
+.resizeHandleTL::after { top:    2px; left:  2px; border-left:   2px solid var(--color-primary); border-top:    2px solid var(--color-primary); }
+
+.area:hover .resizeHandle {
+  opacity: 1;
+}
+
+.areaResizing {
+  border-style: dashed !important;
+  border-color: var(--color-primary) !important;
+}
+
+.resizeLabel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.75);
+  pointer-events: none;
+  border-radius: 2px;
 }

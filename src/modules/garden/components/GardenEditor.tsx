@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -31,9 +31,10 @@ import styles from '../styles/garden-editor.module.css';
 
 interface Props {
   gardenId: string | null;
+  onUnsavedStateChange: (hasUnsaved: boolean) => void;
 }
 
-export const GardenEditor = ({ gardenId }: Props) => {
+export const GardenEditor = ({ gardenId, onUnsavedStateChange }: Props) => {
   const { plants, isLoading } = usePlants();
   const {
     placedPlants,
@@ -49,15 +50,35 @@ export const GardenEditor = ({ gardenId }: Props) => {
     changePlotScale,
     setPlotDimensions,
     loadGarden,
+    removePlant,
     zoomIn,
     zoomOut,
   } = useGardenState();
 
-  const { saveGarden, isSaving, showNameModal, confirmSave, dismissModal } = useGardenSave(
+  const {
+    saveGarden,
+    isSaving,
+    showNameModal,
+    confirmSave,
+    dismissModal,
+    hasUnsavedChanges,
+    autoSaveStatus,
+  } = useGardenSave(
     { placedPlants, plotWidthM, plotHeightM, plotScale },
     loadGarden,
     gardenId,
   );
+
+  useEffect(() => {
+    onUnsavedStateChange(hasUnsavedChanges);
+  }, [hasUnsavedChanges, onUnsavedStateChange]);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasUnsavedChanges]);
 
   const [activeDragData, setActiveDragData] = useState<DragData | null>(null);
   const [noSpaceError, setNoSpaceError] = useState(false);
@@ -192,6 +213,7 @@ export const GardenEditor = ({ gardenId }: Props) => {
           plotWidthM={plotWidthM}
           plotHeightM={plotHeightM}
           isSaving={isSaving}
+          autoSaveStatus={autoSaveStatus}
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}
           onPlotScaleChange={changePlotScale}
@@ -202,6 +224,8 @@ export const GardenEditor = ({ gardenId }: Props) => {
           placedPlants={placedPlants}
           plotConfig={plotConfig}
           onEditPlant={setEditingPlant}
+          onRemovePlant={removePlant}
+          onResizePlant={(id, count, plantsPerRow, x, y) => updatePlant(id, { count, plantsPerRow, x, y })}
           onCellSizeChange={handleCellSizeChange}
         />
       </SplitLayout>

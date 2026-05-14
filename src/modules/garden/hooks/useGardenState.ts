@@ -34,9 +34,13 @@ export const useGardenState = () => {
 
   const updatePlant = (
     id: string,
-    updates: Partial<Pick<PlacedPlant, 'count' | 'plantsPerRow' | 'spacing'>>,
+    updates: Partial<Pick<PlacedPlant, 'count' | 'plantsPerRow' | 'spacing' | 'x' | 'y'>>,
   ) => {
     setPlacedPlants((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
+  };
+
+  const removePlant = (id: string) => {
+    setPlacedPlants((prev) => prev.filter((p) => p.id !== id));
   };
 
   const loadGarden = useCallback(
@@ -80,6 +84,7 @@ export const useGardenState = () => {
     changePlotScale,
     setPlotDimensions,
     loadGarden,
+    removePlant,
     zoomIn,
     zoomOut,
   };

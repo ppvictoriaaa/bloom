@@ -165,6 +165,7 @@
 }
 
 .gardenCard {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -181,6 +182,75 @@
 .gardenCard:hover {
   border-color: var(--color-primary);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+}
+
+.deleteButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.gardenCard:hover .deleteButton {
+  display: flex;
+}
+
+.deleteButton:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.deleteConfirm {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 3px 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.deleteConfirmText {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.deleteConfirmYes,
+.deleteConfirmNo {
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: none;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.deleteConfirmYes {
+  background: #dc2626;
+  color: #fff;
+}
+
+.deleteConfirmNo {
+  background: var(--color-bg);
+  color: var(--color-text-muted);
 }
 
 .gardenIcon {
@@ -202,4 +272,77 @@
 .gardenMeta {
   font-size: 0.8rem;
   color: var(--color-text-muted);
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+
+.modal {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 24px;
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
+}
+
+.modalTitle {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.modalBody {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.modalStay {
+  padding: 8px 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.15s;
+}
+
+.modalStay:hover {
+  background: var(--color-bg);
+}
+
+.modalLeave {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-error, #e53e3e);
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.15s;
+}
+
+.modalLeave:hover {
+  opacity: 0.88;
 }
