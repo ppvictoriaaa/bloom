@@ -10,6 +10,8 @@ import {
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { usePlants } from '../hooks/usePlants';
 import { useGardenState } from '../hooks/useGardenState';
+import { useGardenSave } from '../hooks/useGardenSave';
+import { GardenNameModal } from './GardenNameModal';
 import { GardenGrid } from './GardenGrid';
 import { GardenToolbar } from './GardenToolbar';
 import { PlantsSidebar } from './PlantsSidebar';
@@ -27,7 +29,11 @@ import {
 import type { DragData, PlantData, PlacedPlant, PlotConfig } from '../types/garden.types';
 import styles from '../styles/garden-editor.module.css';
 
-export const GardenEditor = () => {
+interface Props {
+  gardenId: string | null;
+}
+
+export const GardenEditor = ({ gardenId }: Props) => {
   const { plants, isLoading } = usePlants();
   const {
     placedPlants,
@@ -42,9 +48,16 @@ export const GardenEditor = () => {
     setPendingDrop,
     changePlotScale,
     setPlotDimensions,
+    loadGarden,
     zoomIn,
     zoomOut,
   } = useGardenState();
+
+  const { saveGarden, isSaving, showNameModal, confirmSave, dismissModal } = useGardenSave(
+    { placedPlants, plotWidthM, plotHeightM, plotScale },
+    loadGarden,
+    gardenId,
+  );
 
   const [activeDragData, setActiveDragData] = useState<DragData | null>(null);
   const [noSpaceError, setNoSpaceError] = useState(false);
@@ -178,10 +191,12 @@ export const GardenEditor = () => {
           plotScale={plotScale}
           plotWidthM={plotWidthM}
           plotHeightM={plotHeightM}
+          isSaving={isSaving}
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}
           onPlotScaleChange={changePlotScale}
           onDimensionsChange={setPlotDimensions}
+          onSave={saveGarden}
         />
         <GardenGrid
           placedPlants={placedPlants}
@@ -238,6 +253,10 @@ export const GardenEditor = () => {
           onConfirm={handleEditConfirm}
           onCancel={() => setEditingPlant(null)}
         />
+      )}
+
+      {showNameModal && (
+        <GardenNameModal onConfirm={confirmSave} onCancel={dismissModal} />
       )}
 
       {noSpaceError && (

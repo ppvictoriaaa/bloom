@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { PlacedPlant, PendingDrop } from '../types/garden.types';
 import {
   SCALE_STEP,
+  PLOT_SCALES,
   clampScale,
   DEFAULT_PLOT_SCALE,
   DEFAULT_PLOT_WIDTH_M,
@@ -38,6 +39,18 @@ export const useGardenState = () => {
     setPlacedPlants((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
   };
 
+  const loadGarden = useCallback(
+    (data: { placedPlants: PlacedPlant[]; plotWidthM: number; plotHeightM: number; metersPerCell: number }) => {
+      const scale = PLOT_SCALES.find((s) => s.metersPerCell === data.metersPerCell) ?? DEFAULT_PLOT_SCALE;
+      setPlacedPlants(data.placedPlants);
+      setPlotScale(scale);
+      setPlotWidthM(data.plotWidthM);
+      setPlotHeightM(data.plotHeightM);
+      setUserDimensions({ w: data.plotWidthM, h: data.plotHeightM });
+    },
+    [],
+  );
+
   const zoomIn = () => setScale((prev) => clampScale(prev + SCALE_STEP));
   const zoomOut = () => setScale((prev) => clampScale(prev - SCALE_STEP));
 
@@ -66,6 +79,7 @@ export const useGardenState = () => {
     setPendingDrop,
     changePlotScale,
     setPlotDimensions,
+    loadGarden,
     zoomIn,
     zoomOut,
   };

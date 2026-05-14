@@ -11,10 +11,12 @@ interface Props {
   plotScale: PlotScale;
   plotWidthM: number;
   plotHeightM: number;
+  isSaving: boolean;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onPlotScaleChange: (scale: PlotScale) => void;
   onDimensionsChange: (widthM: number, heightM: number) => void;
+  onSave: () => void;
 }
 
 export const GardenToolbar = ({
@@ -22,10 +24,12 @@ export const GardenToolbar = ({
   plotScale,
   plotWidthM,
   plotHeightM,
+  isSaving,
   onZoomIn,
   onZoomOut,
   onPlotScaleChange,
   onDimensionsChange,
+  onSave,
 }: Props) => {
   const { metersPerCell } = plotScale;
   const isKm = metersPerCell >= 1000;
@@ -84,6 +88,11 @@ export const GardenToolbar = ({
         <span className={styles.dim}>
           ({formatLength(plotWidthM)} × {formatLength(plotHeightM)})
         </span>
+
+        <span className={styles.separator} />
+        <button className={styles.saveButton} onClick={onSave} disabled={isSaving}>
+          {isSaving ? 'Saving…' : 'Save'}
+        </button>
       </div>
     </div>
   );

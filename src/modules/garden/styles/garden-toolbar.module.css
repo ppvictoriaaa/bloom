@@ -87,6 +87,29 @@
   opacity: 0.7;
 }
 
+.saveButton {
+  padding: 0 12px;
+  height: 28px;
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.saveButton:hover {
+  opacity: 0.85;
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .warnings {
   display: flex;
   flex-direction: column;
