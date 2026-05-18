@@ -29,6 +29,7 @@ export const useGardenSave = (
   gardenState: GardenState,
   loadGarden: LoadGardenFn,
   gardenId: string | null,
+  onCreated?: (gardenId: string, name: string) => void,
 ) => {
   const queryClient = useQueryClient();
   const [showNameModal, setShowNameModal] = useState(false);
@@ -68,7 +69,10 @@ export const useGardenSave = (
         ? gardensApi.create(payload.data)
         : gardensApi.update(payload.id, payload.data),
     onSuccess: (response, variables) => {
-      if (variables.type === 'create') setCreatedGardenId(response.data._id);
+      if (variables.type === 'create') {
+        setCreatedGardenId(response.data._id);
+        onCreated?.(response.data._id, response.data.name);
+      }
       setShowNameModal(false);
       setAutoSaveStatus('saved');
       queryClient.invalidateQueries({ queryKey: ['gardens'] });

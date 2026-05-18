@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
 import { useAuthStore } from '../../store/auth.store';
 import { useProfile } from '../../hooks/useProfile';
@@ -9,10 +9,17 @@ import { SvgIcon } from '../../components/ui/SvgIcon';
 import { icons } from '../../components/ui/icons';
 import { theme } from '../../styles/theme';
 import { gardensApi } from '../../api/gardens';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import styles from './styles/home.module.css';
 
-type Tab = 'overview' | 'create';
+interface GardenTab {
+  tabId: string;
+  gardenId: string | null;
+  label: string;
+  hasUnsaved: boolean;
+}
+
+let tabCounter = 0;
+const nextTabId = () => `tab-${++tabCounter}`;
 
 export const HomePage = () => {
   const user = useAuthStore((s) => s.user);
@@ -20,10 +27,9 @@ export const HomePage = () => {
   const { profile } = useProfile();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<Tab>('overview');
-  const [gardenId, setGardenId] = useState<string | null>(null);
-  const [editorHasUnsaved, setEditorHasUnsaved] = useState(false);
-  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [tabs, setTabs] = useState<GardenTab[]>([]);
+  const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [pendingCloseTabId, setPendingCloseTabId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
@@ -45,36 +51,77 @@ export const HomePage = () => {
     navigate(RouteNames.LOGIN);
   };
 
-  const handleMyGardensClick = () => {
-    if (activeTab === 'create' && editorHasUnsaved) {
-      setShowLeaveModal(true);
-    } else {
-      setActiveTab('overview');
+  const handleOpenGarden = (gardenId: string) => {
+    const existing = tabs.find((t) => t.gardenId === gardenId);
+    if (existing) {
+      setActiveTabId(existing.tabId);
+      return;
     }
-  };
-
-  const handleLeaveConfirm = () => {
-    setShowLeaveModal(false);
-    setEditorHasUnsaved(false);
-    setActiveTab('overview');
-  };
-
-  const handleOpenGarden = (id: string) => {
-    setGardenId(id);
-    setActiveTab('create');
+    const garden = gardens.find((g) => g._id === gardenId);
+    const tab: GardenTab = {
+      tabId: nextTabId(),
+      gardenId,
+      label: garden?.name ?? 'garden',
+      hasUnsaved: false,
+    };
+    setTabs((prev) => [...prev, tab]);
+    setActiveTabId(tab.tabId);
   };
 
   const handleNewGarden = () => {
-    setGardenId(null);
-    setActiveTab('create');
+    const tab: GardenTab = {
+      tabId: nextTabId(),
+      gardenId: null,
+      label: 'garden',
+      hasUnsaved: false,
+    };
+    setTabs((prev) => [...prev, tab]);
+    setActiveTabId(tab.tabId);
   };
 
-  const handleUnsavedStateChange = useCallback((hasUnsaved: boolean) => {
-    setEditorHasUnsaved(hasUnsaved);
+  const doCloseTab = useCallback((tabId: string) => {
+    setTabs((prev) => prev.filter((t) => t.tabId !== tabId));
+    setActiveTabId((cur) => {
+      if (cur !== tabId) return cur;
+      const idx = tabs.findIndex((t) => t.tabId === tabId);
+      const remaining = tabs.filter((t) => t.tabId !== tabId);
+      if (remaining.length === 0) return null;
+      return remaining[Math.max(0, idx - 1)].tabId;
+    });
+  }, [tabs]);
+
+  const handleCloseTab = useCallback((tabId: string) => {
+    const tab = tabs.find((t) => t.tabId === tabId);
+    if (tab?.hasUnsaved) {
+      setPendingCloseTabId(tabId);
+    } else {
+      doCloseTab(tabId);
+    }
+  }, [tabs, doCloseTab]);
+
+  const handleLeaveConfirm = () => {
+    if (pendingCloseTabId) {
+      doCloseTab(pendingCloseTabId);
+      setPendingCloseTabId(null);
+    }
+  };
+
+  const handleUnsavedChange = useCallback((tabId: string, hasUnsaved: boolean) => {
+    setTabs((prev) =>
+      prev.map((t) => (t.tabId === tabId ? { ...t, hasUnsaved } : t)),
+    );
   }, []);
 
+  const handleCreated = useCallback((tabId: string, gardenId: string, name: string) => {
+    setTabs((prev) =>
+      prev.map((t) => (t.tabId === tabId ? { ...t, gardenId, label: name } : t)),
+    );
+  }, []);
+
+  const isEditorActive = activeTabId !== null;
+
   return (
-    <div className={`${styles.container} ${activeTab === 'create' ? styles.containerFull : ''}`}>
+    <div className={`${styles.container} ${isEditorActive ? styles.containerFull : ''}`}>
       <header className={styles.header}>
         <h1 className={styles.logo}>
           <SvgIcon icon={icons.leaf} size={20} color={theme.colors.primary} />
@@ -92,20 +139,35 @@ export const HomePage = () => {
 
       <div className={styles.tabs}>
         <button
-          className={`${styles.tab} ${activeTab === 'overview' ? styles.tabActive : ''}`}
-          onClick={handleMyGardensClick}
+          className={`${styles.tab} ${activeTabId === null ? styles.tabActive : ''}`}
+          onClick={() => setActiveTabId(null)}
         >
           My Gardens
         </button>
-        <button
-          className={`${styles.tab} ${activeTab === 'create' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('create')}
-        >
-          Create Garden
-        </button>
+        {tabs.map((tab) => (
+          <div
+            key={tab.tabId}
+            className={`${styles.tabItem} ${activeTabId === tab.tabId ? styles.tabItemActive : ''}`}
+          >
+            <button
+              className={styles.tabLabel}
+              onClick={() => setActiveTabId(tab.tabId)}
+            >
+              {tab.hasUnsaved && <span className={styles.tabDot} />}
+              {tab.label}
+            </button>
+            <button
+              className={styles.tabClose}
+              onClick={(e) => { e.stopPropagation(); handleCloseTab(tab.tabId); }}
+              aria-label="Close tab"
+            >
+              ×
+            </button>
+          </div>
+        ))}
       </div>
 
-      {activeTab === 'overview' && (
+      {activeTabId === null && (
         <main className={styles.main}>
           <div className={styles.overviewHeader}>
             <h2 className={styles.greeting}>Hello, {profile?.name || user?.email}!</h2>
@@ -170,21 +232,29 @@ export const HomePage = () => {
         </main>
       )}
 
-      {activeTab === 'create' && (
-        <div className={styles.editorWrapper}>
-          <GardenEditor gardenId={gardenId} onUnsavedStateChange={handleUnsavedStateChange} />
+      {tabs.map((tab) => (
+        <div
+          key={tab.tabId}
+          className={styles.editorWrapper}
+          style={{ display: activeTabId === tab.tabId ? undefined : 'none' }}
+        >
+          <GardenEditor
+            gardenId={tab.gardenId}
+            onUnsavedStateChange={(hasUnsaved) => handleUnsavedChange(tab.tabId, hasUnsaved)}
+            onCreated={(gardenId, name) => handleCreated(tab.tabId, gardenId, name)}
+          />
         </div>
-      )}
+      ))}
 
-      {showLeaveModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowLeaveModal(false)}>
+      {pendingCloseTabId && (
+        <div className={styles.modalOverlay} onClick={() => setPendingCloseTabId(null)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>Unsaved changes</h3>
             <p className={styles.modalBody}>
               Your changes won't be saved. Are you sure you want to lose your progress?
             </p>
             <div className={styles.modalActions}>
-              <button className={styles.modalStay} onClick={() => setShowLeaveModal(false)}>
+              <button className={styles.modalStay} onClick={() => setPendingCloseTabId(null)}>
                 Stay
               </button>
               <button className={styles.modalLeave} onClick={handleLeaveConfirm}>

@@ -11,12 +11,11 @@ interface Props {
   placedPlants: PlacedPlant[];
   plotConfig: PlotConfig;
   onEditPlant: (plant: PlacedPlant) => void;
-  onRemovePlant: (id: string) => void;
   onResizePlant: (id: string, count: number, plantsPerRow: number, x: number, y: number) => void;
   onCellSizeChange: (cellSize: number) => void;
 }
 
-export const GardenGrid = ({ placedPlants, plotConfig, onEditPlant, onRemovePlant, onResizePlant, onCellSizeChange }: Props) => {
+export const GardenGrid = ({ placedPlants, plotConfig, onEditPlant, onResizePlant, onCellSizeChange }: Props) => {
   const { setNodeRef, isOver } = useDroppable({ id: 'garden-grid' });
   const viewportRef = useRef<HTMLDivElement>(null);
 
@@ -80,7 +79,6 @@ export const GardenGrid = ({ placedPlants, plotConfig, onEditPlant, onRemovePlan
               plotHeightM={plotHeightM}
               hasViolation={violatingIds.has(plant.id)}
               onEdit={onEditPlant}
-              onRemove={onRemovePlant}
               onResize={onResizePlant}
               onHover={setHoveredPlantId}
             />

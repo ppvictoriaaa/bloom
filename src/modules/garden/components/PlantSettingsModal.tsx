@@ -20,6 +20,7 @@ interface Props {
   plotHeightM: number;
   initialValues?: InitialValues;
   onConfirm: (plant: Omit<PlacedPlant, 'id'>) => void;
+  onDelete?: () => void;
   onCancel: () => void;
 }
 
@@ -40,6 +41,7 @@ export const PlantSettingsModal = ({
   plotHeightM,
   initialValues,
   onConfirm,
+  onDelete,
   onCancel,
 }: Props) => {
   const { metersPerCell } = plotScale;
@@ -246,12 +248,19 @@ export const PlantSettingsModal = ({
         </div>
 
         <div className={styles.actions}>
-          <button className={styles.cancelButton} onClick={onCancel}>
-            Cancel
-          </button>
-          <button className={styles.confirmButton} onClick={handleConfirm}>
-            {initialValues ? 'Save' : 'Place'}
-          </button>
+          {initialValues && onDelete && (
+            <button className={styles.deleteButton} onClick={onDelete}>
+              Delete
+            </button>
+          )}
+          <div className={styles.actionsPrimary}>
+            <button className={styles.cancelButton} onClick={onCancel}>
+              Cancel
+            </button>
+            <button className={styles.confirmButton} onClick={handleConfirm}>
+              {initialValues ? 'Save' : 'Place'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

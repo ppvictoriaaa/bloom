@@ -44,6 +44,7 @@ export const getPlantBounds = (
 };
 
 const getRequiredGap = (a: PlantBounds, b: PlantBounds): number => {
+  if (a.plantId === b.plantId) return 0;
   const catA = a.category as string;
   const catB = b.category as string;
   if (!catA || !catB) return 0.3;

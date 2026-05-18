@@ -137,8 +137,29 @@
 
 .actions {
   display: flex;
+  align-items: center;
   gap: 8px;
-  justify-content: flex-end;
+}
+
+.actionsPrimary {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.deleteButton {
+  padding: 8px 18px;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  background: transparent;
+  color: #dc2626;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.15s;
+}
+
+.deleteButton:hover {
+  background: #fee2e2;
 }
 
 .cancelButton {

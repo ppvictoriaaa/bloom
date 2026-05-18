@@ -17,7 +17,6 @@ interface Props {
   plotHeightM: number;
   hasViolation: boolean;
   onEdit: (plant: PlacedPlantType) => void;
-  onRemove: (id: string) => void;
   onResize: (id: string, count: number, plantsPerRow: number, x: number, y: number) => void;
   onHover: (id: string | null) => void;
 }
@@ -97,7 +96,6 @@ export const PlacedPlant = ({
   plotHeightM,
   hasViolation,
   onEdit,
-  onRemove,
   onResize,
   onHover,
 }: Props) => {
@@ -230,6 +228,7 @@ export const PlacedPlant = ({
   return (
     <div
       ref={setNodeRef}
+      data-placed-id={plant.id}
       style={{
         position: 'absolute',
         left: leftPx,
@@ -286,14 +285,6 @@ export const PlacedPlant = ({
               {isDetailMode ? ` · ${plant.count}` : ''}
             </div>
 
-            <button
-              className={styles.removeButton}
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => { e.stopPropagation(); onRemove(plant.id); }}
-              aria-label="Remove plant"
-            >
-              ×
-            </button>
             <button
               className={styles.editButton}
               onPointerDown={(e) => e.stopPropagation()}

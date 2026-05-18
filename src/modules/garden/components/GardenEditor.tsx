@@ -11,11 +11,15 @@ import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { usePlants } from '../hooks/usePlants';
 import { useGardenState } from '../hooks/useGardenState';
 import { useGardenSave } from '../hooks/useGardenSave';
+import { useCompatibility } from '../hooks/useCompatibility';
+import type { ActiveWarning } from '../hooks/useCompatibility';
 import { GardenNameModal } from './GardenNameModal';
 import { GardenGrid } from './GardenGrid';
 import { GardenToolbar } from './GardenToolbar';
 import { PlantsSidebar } from './PlantsSidebar';
 import { PlantSettingsModal } from './PlantSettingsModal';
+import { WarningsPanel } from './WarningsPanel';
+import { WarningArrows } from './WarningArrows';
 import { SvgIcon } from '../../../components/ui/SvgIcon';
 import { icons } from '../../../components/ui/icons';
 import { theme } from '../../../styles/theme';
@@ -32,9 +36,10 @@ import styles from '../styles/garden-editor.module.css';
 interface Props {
   gardenId: string | null;
   onUnsavedStateChange: (hasUnsaved: boolean) => void;
+  onCreated?: (gardenId: string, name: string) => void;
 }
 
-export const GardenEditor = ({ gardenId, onUnsavedStateChange }: Props) => {
+export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Props) => {
   const { plants, isLoading } = usePlants();
   const {
     placedPlants,
@@ -67,11 +72,16 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange }: Props) => {
     { placedPlants, plotWidthM, plotHeightM, plotScale },
     loadGarden,
     gardenId,
+    onCreated,
   );
+
+  const { activeWarnings } = useCompatibility(placedPlants);
+  const [hoveredWarning, setHoveredWarning] = useState<ActiveWarning | null>(null);
 
   useEffect(() => {
     onUnsavedStateChange(hasUnsavedChanges);
-  }, [hasUnsavedChanges, onUnsavedStateChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasUnsavedChanges]);
 
   useEffect(() => {
     if (!hasUnsavedChanges) return;
@@ -206,7 +216,17 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange }: Props) => {
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <SplitLayout sidebar={<PlantsSidebar plants={plants} isLoading={isLoading} />}>
+      <SplitLayout
+        sidebar={<PlantsSidebar plants={plants} isLoading={isLoading} />}
+        rightSidebar={
+          activeWarnings.length > 0 ? (
+            <WarningsPanel
+              warnings={activeWarnings}
+              onWarningHover={setHoveredWarning}
+            />
+          ) : undefined
+        }
+      >
         <GardenToolbar
           scale={scale}
           plotScale={plotScale}
@@ -224,11 +244,12 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange }: Props) => {
           placedPlants={placedPlants}
           plotConfig={plotConfig}
           onEditPlant={setEditingPlant}
-          onRemovePlant={removePlant}
           onResizePlant={(id, count, plantsPerRow, x, y) => updatePlant(id, { count, plantsPerRow, x, y })}
           onCellSizeChange={handleCellSizeChange}
         />
       </SplitLayout>
+
+      <WarningArrows hoveredWarning={hoveredWarning} />
 
       <DragOverlay dropAnimation={null}>
         {activePlant ? (
@@ -275,6 +296,7 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange }: Props) => {
             spacing: editingPlant.spacing,
           }}
           onConfirm={handleEditConfirm}
+          onDelete={() => { removePlant(editingPlant.id); setEditingPlant(null); }}
           onCancel={() => setEditingPlant(null)}
         />
       )}
