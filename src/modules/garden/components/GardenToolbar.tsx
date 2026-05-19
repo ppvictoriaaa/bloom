@@ -14,11 +14,13 @@ interface Props {
   plotHeightM: number;
   isSaving: boolean;
   autoSaveStatus: AutoSaveStatus;
+  hasCalendar: boolean;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onPlotScaleChange: (scale: PlotScale) => void;
   onDimensionsChange: (widthM: number, heightM: number) => void;
   onSave: () => void;
+  onCalendarOpen: () => void;
 }
 
 export const GardenToolbar = ({
@@ -28,11 +30,13 @@ export const GardenToolbar = ({
   plotHeightM,
   isSaving,
   autoSaveStatus,
+  hasCalendar,
   onZoomIn,
   onZoomOut,
   onPlotScaleChange,
   onDimensionsChange,
   onSave,
+  onCalendarOpen,
 }: Props) => {
   const { metersPerCell } = plotScale;
   const isKm = metersPerCell >= 1000;
@@ -91,6 +95,11 @@ export const GardenToolbar = ({
         <span className={styles.dim}>
           ({formatLength(plotWidthM)} × {formatLength(plotHeightM)})
         </span>
+
+        <span className={styles.separator} />
+        <button className={styles.calendarButton} onClick={onCalendarOpen}>
+          {hasCalendar ? '📅 Calendar' : '+ Calendar'}
+        </button>
 
         <span className={styles.separator} />
         {autoSaveStatus === 'saving' && <span className={styles.spinner} aria-label="Saving" />}

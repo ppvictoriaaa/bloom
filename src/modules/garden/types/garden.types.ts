@@ -37,6 +37,8 @@ export interface PlacedPlant {
   count: number;
   plantsPerRow: number;
   spacing: number;
+  variety?: string;
+  plantedAt?: string; // ISO date string YYYY-MM-DD
 }
 
 export interface PendingDrop {

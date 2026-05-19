@@ -1,0 +1,338 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay, rgba(0, 0, 0, 0.35));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px 0;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.closeBtn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.closeBtn:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* ── Sections ── */
+.section {
+  padding: 20px 28px 0;
+}
+
+.section:last-of-type {
+  padding-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 10px;
+}
+
+/* ── Location ── */
+.row {
+  display: flex;
+  gap: 8px;
+}
+
+.input {
+  flex: 1;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.findBtn {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--color-primary);
+  border-radius: 7px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.findBtn:hover { opacity: 0.85; }
+.findBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.locationFound {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.checkmark {
+  font-weight: 700;
+}
+
+.fieldError {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--color-error);
+}
+
+/* ── Soil ── */
+.soilGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.radioHidden {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.soilOption {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--color-surface);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.soilOption:hover {
+  border-color: var(--color-primary-light);
+  background: var(--color-bg);
+}
+
+.soilOptionActive {
+  border-color: var(--color-primary);
+  background: rgba(74, 124, 89, 0.05);
+}
+
+.soilName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.soilHint {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+
+/* ── Plants table ── */
+.loading {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.tableWrapper {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th {
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tr {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tr:last-child {
+  border-bottom: none;
+}
+
+.td {
+  padding: 10px 14px;
+  vertical-align: middle;
+}
+
+.plantName {
+  font-size: 14px;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.select {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  min-width: 120px;
+  transition: border-color 0.15s;
+}
+
+.select:focus { border-color: var(--color-primary); }
+
+.noVariety {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.dateInput {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.dateInput:focus { border-color: var(--color-primary); }
+
+/* ── Actions ── */
+.error {
+  margin: 0 28px;
+  font-size: 13px;
+  color: var(--color-error);
+  padding: 10px 14px;
+  background: rgba(217, 79, 79, 0.06);
+  border: 1px solid rgba(217, 79, 79, 0.2);
+  border-radius: 7px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px 28px 24px;
+}
+
+.cancelBtn {
+  height: 36px;
+  padding: 0 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cancelBtn:hover { background: var(--color-bg); }
+
+.generateBtn {
+  height: 36px;
+  padding: 0 20px;
+  border: 1px solid var(--color-primary);
+  border-radius: 7px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.15s;
+}
+
+.generateBtn:hover { opacity: 0.87; }
+.generateBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

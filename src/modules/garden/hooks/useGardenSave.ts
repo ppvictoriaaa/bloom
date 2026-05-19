@@ -142,5 +142,7 @@ export const useGardenSave = (
     dismissModal,
     hasUnsavedChanges,
     autoSaveStatus,
+    activeGardenId: activeId,
+    gardenName: garden?.name ?? null,
   };
 };

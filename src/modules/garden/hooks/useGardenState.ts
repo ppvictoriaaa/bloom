@@ -34,7 +34,7 @@ export const useGardenState = () => {
 
   const updatePlant = (
     id: string,
-    updates: Partial<Pick<PlacedPlant, 'count' | 'plantsPerRow' | 'spacing' | 'x' | 'y'>>,
+    updates: Partial<Pick<PlacedPlant, 'count' | 'plantsPerRow' | 'spacing' | 'x' | 'y' | 'variety' | 'plantedAt'>>,
   ) => {
     setPlacedPlants((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
   };

@@ -20,6 +20,9 @@ import { PlantsSidebar } from './PlantsSidebar';
 import { PlantSettingsModal } from './PlantSettingsModal';
 import { WarningsPanel } from './WarningsPanel';
 import { WarningArrows } from './WarningArrows';
+import { CalendarSetupModal } from './CalendarSetupModal';
+import { CalendarView } from './CalendarView';
+import { MiniCalendar } from './MiniCalendar';
 import { SvgIcon } from '../../../components/ui/SvgIcon';
 import { icons } from '../../../components/ui/icons';
 import { theme } from '../../../styles/theme';
@@ -31,6 +34,11 @@ import {
   findFreePosition,
 } from '../utils/plant-overlap.utils';
 import type { DragData, PlantData, PlacedPlant, PlotConfig } from '../types/garden.types';
+import { useAuthStore } from '../../../store/auth.store';
+import { gardensApi } from '../../../api/gardens';
+import { recommendationsApi } from '../../../api/recommendations';
+import type { CalendarResponse } from '../../../api/recommendations';
+import type { CalendarSetupResult } from './CalendarSetupModal';
 import styles from '../styles/garden-editor.module.css';
 
 interface Props {
@@ -68,12 +76,75 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
     dismissModal,
     hasUnsavedChanges,
     autoSaveStatus,
+    activeGardenId,
+    gardenName,
   } = useGardenSave(
     { placedPlants, plotWidthM, plotHeightM, plotScale },
     loadGarden,
     gardenId,
     onCreated,
   );
+
+  const user = useAuthStore((s) => s.user);
+  const [calendarView, setCalendarView] = useState<'none' | 'setup' | 'full' | 'mini'>('none');
+  const [calendarData, setCalendarData] = useState<CalendarResponse | null>(null);
+
+  useEffect(() => {
+    if (!activeGardenId) return;
+    recommendationsApi.getCalendar(activeGardenId)
+      .then((res) => {
+        setCalendarData(res.data);
+        setCalendarView('mini');
+      })
+      .catch(() => { /* no calendar yet */ });
+  }, [activeGardenId]);
+
+  const handleCalendarOpen = () => {
+    if (calendarData) {
+      setCalendarView('full');
+    } else {
+      setCalendarView('setup');
+    }
+  };
+
+  const handleCalendarGenerate = async (result: CalendarSetupResult) => {
+    if (!activeGardenId || !gardenName || !user) return;
+
+    // Update plant state with variety/plantedAt from setup
+    result.plantSettings.forEach((ps) => {
+      placedPlants
+        .filter((p) => p.slug === ps.slug)
+        .forEach((p) => updatePlant(p.id, { variety: ps.variety || undefined, plantedAt: ps.plantedAt }));
+    });
+
+    // Build updated list synchronously for the save call
+    const updatedPlants = placedPlants.map((p) => {
+      const ps = result.plantSettings.find((s) => s.slug === p.slug);
+      return ps ? { ...p, variety: ps.variety || undefined, plantedAt: ps.plantedAt } : p;
+    });
+
+    await gardensApi.update(activeGardenId, {
+      name: gardenName,
+      placedPlants: updatedPlants,
+      plotWidthM,
+      plotHeightM,
+      metersPerCell: plotScale.metersPerCell,
+    });
+
+    const response = await recommendationsApi.generateCalendar({
+      userId: user.userId,
+      gardenId: activeGardenId,
+      location: {
+        latitude: result.location.latitude,
+        longitude: result.location.longitude,
+        city: result.location.name,
+      },
+      soilType: result.soilType,
+    });
+
+    setCalendarData(response.data);
+    setCalendarView('full');
+  };
 
   const { activeWarnings } = useCompatibility(placedPlants);
   const [hoveredWarning, setHoveredWarning] = useState<ActiveWarning | null>(null);
@@ -234,11 +305,13 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
           plotHeightM={plotHeightM}
           isSaving={isSaving}
           autoSaveStatus={autoSaveStatus}
+          hasCalendar={!!calendarData}
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}
           onPlotScaleChange={changePlotScale}
           onDimensionsChange={setPlotDimensions}
           onSave={saveGarden}
+          onCalendarOpen={handleCalendarOpen}
         />
         <GardenGrid
           placedPlants={placedPlants}
@@ -322,6 +395,32 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
             </button>
           </div>
         </div>
+      )}
+
+      {calendarView === 'setup' && (
+        <CalendarSetupModal
+          placedPlants={placedPlants}
+          onGenerate={handleCalendarGenerate}
+          onClose={() => setCalendarView('none')}
+        />
+      )}
+
+      {calendarView === 'full' && calendarData && activeGardenId && (
+        <CalendarView
+          data={calendarData}
+          gardenId={activeGardenId}
+          onMinimize={() => setCalendarView('mini')}
+          onClose={() => setCalendarView('none')}
+          onDelete={() => { setCalendarData(null); setCalendarView('none'); }}
+          onDataUpdate={setCalendarData}
+        />
+      )}
+
+      {calendarView === 'mini' && calendarData && (
+        <MiniCalendar
+          data={calendarData}
+          onExpand={() => setCalendarView('full')}
+        />
       )}
     </DndContext>
   );
