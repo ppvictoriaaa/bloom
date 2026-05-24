@@ -116,6 +116,7 @@ export const PlantSettingsModal = ({
       count: finalCount,
       plantsPerRow: finalPlantsPerRow,
       spacing,
+      customName: pendingDrop.customName,
     });
   };
 
@@ -123,7 +124,7 @@ export const PlantSettingsModal = ({
     <div className={styles.overlay} onClick={onCancel}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h3 className={styles.title}>
-          {initialValues ? 'Edit' : 'Place'} {pendingDrop.name}
+          {initialValues ? 'Edit' : 'Place'} {pendingDrop.customName ?? pendingDrop.name}
         </h3>
 
         {isAreaMode ? (

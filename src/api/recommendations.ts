@@ -15,6 +15,7 @@ export type AccuracyLevel = 'high' | 'estimated';
 export interface CalendarEvent {
   id: string;
   plantSlug: string;
+  plantLabel?: string;
   type: EventType;
   title: string;
   description?: string;
@@ -89,8 +90,8 @@ export const recommendationsApi = {
   updateEventStatus: (eventId: string, status: EventStatus) =>
     recClient.patch<CalendarEvent>(`/care-calendar/events/${eventId}/status`, { status }),
 
-  addPlants: (gardenId: string, slugs: string[]) =>
-    recClient.post<CalendarResponse>(`/care-calendar/${gardenId}/add-plants`, { slugs }),
+  addPlants: (gardenId: string, plants: { slug: string; label?: string }[]) =>
+    recClient.post<CalendarResponse>(`/care-calendar/${gardenId}/add-plants`, { plants }),
 
   deleteCalendar: (gardenId: string) =>
     recClient.delete(`/care-calendar/${gardenId}`),

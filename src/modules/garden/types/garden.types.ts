@@ -39,6 +39,7 @@ export interface PlacedPlant {
   spacing: number;
   variety?: string;
   plantedAt?: string; // ISO date string YYYY-MM-DD
+  customName?: string;
 }
 
 export interface PendingDrop {
@@ -50,6 +51,7 @@ export interface PendingDrop {
   imageUrl?: string;
   x: number;
   y: number;
+  customName?: string;
 }
 
 export type DragData =

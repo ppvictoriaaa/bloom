@@ -5,6 +5,7 @@ import { toast } from '../../../store/toast.store';
 import styles from '../styles/add-plants-modal.module.css';
 
 interface PlantSetting {
+  plantId: string;
   slug: string;
   name: string;
   variety: string;
@@ -39,15 +40,17 @@ export const AddPlantsModal = ({ newPlants, onAdd, onClose }: Props) => {
   useEffect(() => {
     const seen = new Set<string>();
     const unique = newPlants.filter((p) => {
-      if (seen.has(p.slug)) return false;
-      seen.add(p.slug);
+      const key = p.customName ?? p.slug;
+      if (seen.has(key)) return false;
+      seen.add(key);
       return true;
     });
 
     setPlantSettings(
       unique.map((p) => ({
+        plantId: p.id,
         slug: p.slug,
-        name: p.name,
+        name: p.customName ?? p.name,
         variety: p.variety ?? '',
         plantedAt: p.plantedAt ?? TODAY,
         supportsVarieties: false,
@@ -80,9 +83,9 @@ export const AddPlantsModal = ({ newPlants, onAdd, onClose }: Props) => {
       .finally(() => setLoadingRules(false));
   }, []);
 
-  const updateSetting = (slug: string, field: 'variety' | 'plantedAt', value: string) => {
+  const updateSetting = (plantId: string, field: 'variety' | 'plantedAt', value: string) => {
     setPlantSettings((prev) =>
-      prev.map((ps) => (ps.slug === slug ? { ...ps, [field]: value } : ps)),
+      prev.map((ps) => (ps.plantId === plantId ? { ...ps, [field]: value } : ps)),
     );
   };
 
@@ -127,7 +130,7 @@ export const AddPlantsModal = ({ newPlants, onAdd, onClose }: Props) => {
                 </thead>
                 <tbody>
                   {plantSettings.map((ps) => (
-                    <tr key={ps.slug} className={styles.tr}>
+                    <tr key={ps.plantId} className={styles.tr}>
                       <td className={styles.td}>
                         <span className={styles.plantName}>{ps.name}</span>
                       </td>
@@ -136,7 +139,7 @@ export const AddPlantsModal = ({ newPlants, onAdd, onClose }: Props) => {
                           <select
                             className={styles.select}
                             value={ps.variety}
-                            onChange={(e) => updateSetting(ps.slug, 'variety', e.target.value)}
+                            onChange={(e) => updateSetting(ps.plantId, 'variety', e.target.value)}
                           >
                             <option value="">Not specified</option>
                             {ps.allowedVarieties.map((v) => (
@@ -154,7 +157,7 @@ export const AddPlantsModal = ({ newPlants, onAdd, onClose }: Props) => {
                           type="date"
                           className={styles.dateInput}
                           value={ps.plantedAt}
-                          onChange={(e) => updateSetting(ps.slug, 'plantedAt', e.target.value)}
+                          onChange={(e) => updateSetting(ps.plantId, 'plantedAt', e.target.value)}
                         />
                       </td>
                     </tr>

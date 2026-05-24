@@ -64,12 +64,14 @@ export const CalendarSetupModal = ({ placedPlants, onGenerate, onClose }: Props)
 
   const cityRef = useRef<HTMLInputElement>(null);
 
-  // Build unique-by-slug plant list and fetch care rules
+  // Build unique-per-instance plant list and fetch care rules.
+  // Named plants (customName set) get their own row; unnamed plants dedup by slug.
   useEffect(() => {
     const seen = new Set<string>();
     const unique = placedPlants.filter((p) => {
-      if (seen.has(p.slug)) return false;
-      seen.add(p.slug);
+      const key = p.customName ?? p.slug;
+      if (seen.has(key)) return false;
+      seen.add(key);
       return true;
     });
 
@@ -77,7 +79,7 @@ export const CalendarSetupModal = ({ placedPlants, onGenerate, onClose }: Props)
       unique.map((p) => ({
         plantId: p.id,
         slug: p.slug,
-        name: p.name,
+        name: p.customName ?? p.name,
         variety: p.variety ?? '',
         plantedAt: p.plantedAt ?? TODAY,
         supportsVarieties: false,
@@ -126,9 +128,9 @@ export const CalendarSetupModal = ({ placedPlants, onGenerate, onClose }: Props)
     setGeocoding(false);
   };
 
-  const updateSetting = (slug: string, field: 'variety' | 'plantedAt', value: string) => {
+  const updateSetting = (plantId: string, field: 'variety' | 'plantedAt', value: string) => {
     setPlantSettings((prev) =>
-      prev.map((ps) => (ps.slug === slug ? { ...ps, [field]: value } : ps)),
+      prev.map((ps) => (ps.plantId === plantId ? { ...ps, [field]: value } : ps)),
     );
   };
 
@@ -223,7 +225,7 @@ export const CalendarSetupModal = ({ placedPlants, onGenerate, onClose }: Props)
                 </thead>
                 <tbody>
                   {plantSettings.map((ps) => (
-                    <tr key={ps.slug} className={styles.tr}>
+                    <tr key={ps.plantId} className={styles.tr}>
                       <td className={styles.td}>
                         <span className={styles.plantName}>{ps.name}</span>
                       </td>
@@ -232,7 +234,7 @@ export const CalendarSetupModal = ({ placedPlants, onGenerate, onClose }: Props)
                           <select
                             className={styles.select}
                             value={ps.variety}
-                            onChange={(e) => updateSetting(ps.slug, 'variety', e.target.value)}
+                            onChange={(e) => updateSetting(ps.plantId, 'variety', e.target.value)}
                           >
                             <option value="">Not specified</option>
                             {ps.allowedVarieties.map((v) => (
@@ -251,7 +253,7 @@ export const CalendarSetupModal = ({ placedPlants, onGenerate, onClose }: Props)
                           className={styles.dateInput}
                           value={ps.plantedAt}
                           onChange={(e) =>
-                            updateSetting(ps.slug, 'plantedAt', e.target.value)
+                            updateSetting(ps.plantId, 'plantedAt', e.target.value)
                           }
                         />
                       </td>

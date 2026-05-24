@@ -137,7 +137,7 @@ export const CalendarView = ({ data, gardenId, newPlants, plantingDays, plantInf
     const map = new Map<string, { name: string; imageUrl?: string }[]>();
     events.forEach((e) => {
       if (e.type !== 'harvesting') return;
-      const info = plantInfoBySlug[e.plantSlug];
+      const info = plantInfoBySlug[e.plantLabel ?? e.plantSlug];
       if (!info) return;
       const list = map.get(e.date) ?? [];
       if (!list.some((p) => p.name === info.name)) list.push(info);
@@ -329,11 +329,6 @@ export const CalendarView = ({ data, gardenId, newPlants, plantingDays, plantInf
                               <span
                                 key={idx}
                                 className={styles.plantingBgItem}
-                                onMouseEnter={(e) => {
-                                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                  setPlantingTooltip({ names: plant.name, x: rect.left + rect.width / 2, y: rect.top });
-                                }}
-                                onMouseLeave={() => setPlantingTooltip(null)}
                               >
                                 {plant.imageUrl
                                   ? <img src={plant.imageUrl} alt={plant.name} className={styles.plantingBgImg} />

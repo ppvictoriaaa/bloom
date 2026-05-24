@@ -28,14 +28,34 @@
   color: var(--color-text);
 }
 
-.expandBtn {
+.header {
+  cursor: grab;
+  user-select: none;
+}
+
+.dragging .header {
+  cursor: grabbing;
+}
+
+.dragging {
+  user-select: none;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+}
+
+.headerBtns {
+  display: flex;
+  gap: 4px;
+}
+
+.expandBtn,
+.closeBtn {
   width: 26px;
   height: 26px;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   background: none;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -43,7 +63,8 @@
   transition: background 0.13s, color 0.13s;
 }
 
-.expandBtn:hover {
+.expandBtn:hover,
+.closeBtn:hover {
   background: var(--color-bg);
   color: var(--color-text);
 }

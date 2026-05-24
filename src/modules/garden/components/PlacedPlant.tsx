@@ -281,7 +281,7 @@ export const PlacedPlant = ({
         {!isResizing && (
           <>
             <div className={styles.nameTag}>
-              {plant.name}
+              {plant.customName ?? plant.name}
               {isDetailMode ? ` · ${plant.count}` : ''}
             </div>
 

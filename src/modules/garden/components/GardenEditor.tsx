@@ -25,6 +25,7 @@ import { CalendarView } from './CalendarView';
 import { MiniCalendar } from './MiniCalendar';
 import { AddPlantsModal } from './AddPlantsModal';
 import type { AddPlantsResult } from './AddPlantsModal';
+import { DuplicatePlantModal } from './DuplicatePlantModal';
 import { SvgIcon } from '../../../components/ui/SvgIcon';
 import { icons } from '../../../components/ui/icons';
 import { theme } from '../../../styles/theme';
@@ -35,7 +36,7 @@ import {
   isPlacementValid,
   findFreePosition,
 } from '../utils/plant-overlap.utils';
-import type { DragData, PlantData, PlacedPlant, PlotConfig } from '../types/garden.types';
+import type { DragData, PlantData, PlacedPlant, PlotConfig, PendingDrop } from '../types/garden.types';
 import { useAuthStore } from '../../../store/auth.store';
 import { gardensApi } from '../../../api/gardens';
 import { recommendationsApi } from '../../../api/recommendations';
@@ -93,25 +94,26 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
   const [calendarData, setCalendarData] = useState<CalendarResponse | null>(null);
   const [showAddPlantsModal, setShowAddPlantsModal] = useState(false);
   const [calendarVersion, setCalendarVersion] = useState(0);
+  const [pendingDuplicateCheck, setPendingDuplicateCheck] = useState<PendingDrop | null>(null);
 
   const newPlantsForCalendar = useMemo(() => {
     if (!calendarData) return [];
-    const calendarSlugs = new Set(calendarData.events.map((e) => e.plantSlug));
+    const calendarKeys = new Set(calendarData.events.map((e) => e.plantLabel ?? e.plantSlug));
     const seen = new Set<string>();
     return placedPlants.filter((p) => {
-      if (calendarSlugs.has(p.slug) || seen.has(p.slug)) return false;
-      seen.add(p.slug);
+      const key = p.customName ?? p.slug;
+      if (calendarKeys.has(key) || seen.has(key)) return false;
+      seen.add(key);
       return true;
     });
   }, [placedPlants, calendarData]);
 
   const plantInfoBySlug = useMemo(() => {
     const map: Record<string, { name: string; imageUrl?: string }> = {};
-    const seen = new Set<string>();
     for (const p of placedPlants) {
-      if (seen.has(p.slug)) continue;
-      seen.add(p.slug);
-      map[p.slug] = { name: p.name, imageUrl: p.imageUrl };
+      const key = p.customName ?? p.slug;
+      if (map[key]) continue;
+      map[key] = { name: p.customName ?? p.name, imageUrl: p.imageUrl };
     }
     return map;
   }, [placedPlants]);
@@ -120,10 +122,12 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
     const map: Record<string, { name: string; imageUrl?: string }[]> = {};
     const seen = new Set<string>();
     for (const p of placedPlants) {
-      if (!p.plantedAt || seen.has(p.slug)) continue;
-      seen.add(p.slug);
+      if (!p.plantedAt) continue;
+      const key = p.customName ?? p.slug;
+      if (seen.has(key)) continue;
+      seen.add(key);
       if (!map[p.plantedAt]) map[p.plantedAt] = [];
-      map[p.plantedAt].push({ name: p.name, imageUrl: p.imageUrl });
+      map[p.plantedAt].push({ name: p.customName ?? p.name, imageUrl: p.imageUrl });
     }
     return map;
   }, [placedPlants]);
@@ -156,15 +160,13 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
 
     // Build updated plants list with variety/plantedAt from setup
     const updatedPlants = placedPlants.map((p) => {
-      const ps = result.plantSettings.find((s) => s.slug === p.slug);
+      const ps = result.plantSettings.find((s) => s.plantId === p.id);
       return ps ? { ...p, variety: ps.variety || undefined, plantedAt: ps.plantedAt } : p;
     });
 
     // Sync variety/plantedAt into React state
     result.plantSettings.forEach((ps) => {
-      placedPlants
-        .filter((p) => p.slug === ps.slug)
-        .forEach((p) => updatePlant(p.id, { variety: ps.variety || undefined, plantedAt: ps.plantedAt }));
+      updatePlant(ps.plantId, { variety: ps.variety || undefined, plantedAt: ps.plantedAt });
     });
 
     // Save garden with updated plant data so recommendation-service can read it
@@ -199,14 +201,12 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
     if (!activeGardenId) throw new Error('Save your garden before updating the calendar.');
 
     const updatedPlants = placedPlants.map((p) => {
-      const ps = result.plantSettings.find((s) => s.slug === p.slug);
+      const ps = result.plantSettings.find((s) => s.plantId === p.id);
       return ps ? { ...p, variety: ps.variety || undefined, plantedAt: ps.plantedAt } : p;
     });
 
     result.plantSettings.forEach((ps) => {
-      placedPlants
-        .filter((p) => p.slug === ps.slug)
-        .forEach((p) => updatePlant(p.id, { variety: ps.variety || undefined, plantedAt: ps.plantedAt }));
+      updatePlant(ps.plantId, { variety: ps.variety || undefined, plantedAt: ps.plantedAt });
     });
 
     const name = gardenName ?? (await gardensApi.getAll().then((r) => r.data.find((g) => g._id === activeGardenId)?.name));
@@ -220,8 +220,11 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
       metersPerCell: plotScale.metersPerCell,
     });
 
-    const slugs = result.plantSettings.map((s) => s.slug);
-    const response = await recommendationsApi.addPlants(activeGardenId, slugs);
+    const plantInstances = newPlantsForCalendar.map((p) => ({
+      slug: p.slug,
+      label: p.customName,
+    }));
+    const response = await recommendationsApi.addPlants(activeGardenId, plantInstances);
 
     setCalendarData(response.data);
     setCalendarVersion((v) => v + 1);
@@ -283,7 +286,7 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
         offsetX, offsetY, cellSizeRef.current, metersPerCell, plotWidthM, plotHeightM,
       );
 
-      setPendingDrop({
+      const drop: PendingDrop = {
         plantId: data.plant._id,
         name: data.plant.name,
         slug: data.plant.slug,
@@ -292,7 +295,14 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
         imageUrl: data.plant.imageUrl,
         x,
         y,
-      });
+      };
+
+      const isDuplicate = placedPlants.some((p) => p.slug === data.plant.slug);
+      if (isDuplicate) {
+        setPendingDuplicateCheck(drop);
+      } else {
+        setPendingDrop(drop);
+      }
     }
 
     if (data.type === 'existing') {
@@ -421,6 +431,21 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
         ) : null}
       </DragOverlay>
 
+      {pendingDuplicateCheck && (
+        <DuplicatePlantModal
+          plantName={pendingDuplicateCheck.name}
+          onSame={() => {
+            setPendingDrop(pendingDuplicateCheck);
+            setPendingDuplicateCheck(null);
+          }}
+          onSeparate={(customName) => {
+            setPendingDrop({ ...pendingDuplicateCheck, customName });
+            setPendingDuplicateCheck(null);
+          }}
+          onCancel={() => setPendingDuplicateCheck(null)}
+        />
+      )}
+
       {pendingDrop && (
         <PlantSettingsModal
           pendingDrop={pendingDrop}
@@ -494,7 +519,7 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
           key={calendarVersion}
           data={calendarData}
           gardenId={activeGardenId}
-          newPlants={newPlantsForCalendar.map((p) => ({ slug: p.slug, name: p.name }))}
+          newPlants={newPlantsForCalendar.map((p) => ({ slug: p.slug, name: p.customName ?? p.name }))}
           plantingDays={plantingDays}
           plantInfoBySlug={plantInfoBySlug}
           onMinimize={() => setCalendarView('mini')}
@@ -517,6 +542,7 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
         <MiniCalendar
           data={calendarData}
           onExpand={() => setCalendarView('full')}
+          onClose={() => setCalendarView('none')}
         />
       )}
     </DndContext>
