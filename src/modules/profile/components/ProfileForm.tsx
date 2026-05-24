@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usersApi } from "../../../api/users";
+import { toast } from "../../../store/toast.store";
 import styles from "../styles/profile.module.css";
 
 interface Props {
@@ -19,6 +20,10 @@ export const ProfileForm = ({ initialName, email }: Props) => {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["profile"] });
       setSaved(true);
+      toast.success("Profile saved.");
+    },
+    onError: () => {
+      toast.error("Failed to save profile. Please try again.");
     },
   });
 
@@ -28,6 +33,10 @@ export const ProfileForm = ({ initialName, email }: Props) => {
   };
 
   const handleSave = () => {
+    if (!name.trim()) {
+      toast.error("Name cannot be empty.");
+      return;
+    }
     mutation.mutate();
   };
 

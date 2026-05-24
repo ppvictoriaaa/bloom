@@ -29,8 +29,14 @@ export const LoginPage = () => {
 
       login(data.accessToken, { userId: payload.sub, email: payload.email })
       navigate(RouteNames.HOME)
-    } catch {
-      setError('Invalid email or password')
+    } catch (err: any) {
+      if (!err.response) {
+        setError('Connection error. Check your internet and try again.')
+      } else if (err.response.status === 401 || err.response.status === 400) {
+        setError('Invalid email or password.')
+      } else {
+        setError('Something went wrong. Please try again.')
+      }
     } finally {
       setLoading(false)
     }

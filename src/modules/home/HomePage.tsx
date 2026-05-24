@@ -9,6 +9,7 @@ import { SvgIcon } from '../../components/ui/SvgIcon';
 import { icons } from '../../components/ui/icons';
 import { theme } from '../../styles/theme';
 import { gardensApi } from '../../api/gardens';
+import { toast } from '../../store/toast.store';
 import styles from './styles/home.module.css';
 
 interface GardenTab {
@@ -33,15 +34,20 @@ export const HomePage = () => {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
-  const { mutate: deleteGarden } = useMutation({
+  const { mutate: deleteGarden, isPending: isDeleting, variables: deletingId } = useMutation({
     mutationFn: (id: string) => gardensApi.remove(id),
     onSuccess: () => {
       setConfirmDeleteId(null);
       queryClient.invalidateQueries({ queryKey: ['gardens'] });
+      toast.success('Garden deleted.');
+    },
+    onError: () => {
+      setConfirmDeleteId(null);
+      toast.error('Failed to delete garden. Please try again.');
     },
   });
 
-  const { data: gardens = [], isLoading } = useQuery({
+  const { data: gardens = [], isLoading, isError } = useQuery({
     queryKey: ['gardens'],
     queryFn: () => gardensApi.getAll().then((r) => r.data),
   });
@@ -178,7 +184,11 @@ export const HomePage = () => {
 
           {isLoading && <p className={styles.hint}>Loading your gardens…</p>}
 
-          {!isLoading && gardens.length === 0 && (
+          {isError && (
+            <p className={styles.hint}>Failed to load gardens. Please refresh the page.</p>
+          )}
+
+          {!isLoading && !isError && gardens.length === 0 && (
             <p className={styles.hint}>
               No gardens saved yet.{' '}
               <button className={styles.inlineLink} onClick={handleNewGarden}>
@@ -209,10 +219,18 @@ export const HomePage = () => {
                   {confirmDeleteId === garden._id ? (
                     <div className={styles.deleteConfirm} onClick={(e) => e.stopPropagation()}>
                       <span className={styles.deleteConfirmText}>Delete?</span>
-                      <button className={styles.deleteConfirmYes} onClick={() => deleteGarden(garden._id)}>
-                        Yes
+                      <button
+                        className={styles.deleteConfirmYes}
+                        onClick={() => deleteGarden(garden._id)}
+                        disabled={isDeleting && deletingId === garden._id}
+                      >
+                        {isDeleting && deletingId === garden._id ? '…' : 'Yes'}
                       </button>
-                      <button className={styles.deleteConfirmNo} onClick={() => setConfirmDeleteId(null)}>
+                      <button
+                        className={styles.deleteConfirmNo}
+                        onClick={() => setConfirmDeleteId(null)}
+                        disabled={isDeleting}
+                      >
                         No
                       </button>
                     </div>

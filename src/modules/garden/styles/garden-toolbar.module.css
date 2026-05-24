@@ -133,8 +133,13 @@
   transition: background 0.15s;
 }
 
-.calendarButton:hover {
+.calendarButton:hover:not(:disabled) {
   background: rgba(74, 124, 89, 0.08);
+}
+
+.calendarButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .saveButton {

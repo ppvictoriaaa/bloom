@@ -33,6 +33,12 @@ export interface CalendarEvent {
   };
 }
 
+export interface WeatherDay {
+  date: string;   // YYYY-MM-DD
+  precip: number; // mm
+  maxTemp: number; // °C
+}
+
 export interface CalendarResponse {
   gardenId: string;
   generatedAt: string;
@@ -42,6 +48,7 @@ export interface CalendarResponse {
   weatherAccuracyDays: number;
   notice: string;
   events: CalendarEvent[];
+  weatherDays?: WeatherDay[];
 }
 
 export interface PlantCareRule {
@@ -81,6 +88,9 @@ export const recommendationsApi = {
 
   updateEventStatus: (eventId: string, status: EventStatus) =>
     recClient.patch<CalendarEvent>(`/care-calendar/events/${eventId}/status`, { status }),
+
+  addPlants: (gardenId: string, slugs: string[]) =>
+    recClient.post<CalendarResponse>(`/care-calendar/${gardenId}/add-plants`, { slugs }),
 
   deleteCalendar: (gardenId: string) =>
     recClient.delete(`/care-calendar/${gardenId}`),

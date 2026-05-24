@@ -15,6 +15,7 @@ interface Props {
   isSaving: boolean;
   autoSaveStatus: AutoSaveStatus;
   hasCalendar: boolean;
+  canUseCalendar: boolean;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onPlotScaleChange: (scale: PlotScale) => void;
@@ -31,6 +32,7 @@ export const GardenToolbar = ({
   isSaving,
   autoSaveStatus,
   hasCalendar,
+  canUseCalendar,
   onZoomIn,
   onZoomOut,
   onPlotScaleChange,
@@ -97,7 +99,12 @@ export const GardenToolbar = ({
         </span>
 
         <span className={styles.separator} />
-        <button className={styles.calendarButton} onClick={onCalendarOpen}>
+        <button
+          className={styles.calendarButton}
+          onClick={onCalendarOpen}
+          disabled={!canUseCalendar}
+          title={!canUseCalendar ? 'Save your garden first' : undefined}
+        >
           {hasCalendar ? '📅 Calendar' : '+ Calendar'}
         </button>
 

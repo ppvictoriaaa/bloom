@@ -15,13 +15,26 @@ export const RegisterPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    setLoading(true)
 
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.')
+      return
+    }
+
+    setLoading(true)
     try {
       await authApi.register({ email, password })
       navigate(RouteNames.LOGIN)
-    } catch {
-      setError('This email is already registered')
+    } catch (err: any) {
+      if (!err.response) {
+        setError('Connection error. Check your internet and try again.')
+      } else if (err.response.status === 409) {
+        setError('This email is already registered.')
+      } else if (err.response.status === 400) {
+        setError(err.response.data?.message ?? 'Invalid data. Check your inputs.')
+      } else {
+        setError('Something went wrong. Please try again.')
+      }
     } finally {
       setLoading(false)
     }

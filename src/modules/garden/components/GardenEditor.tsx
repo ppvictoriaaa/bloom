@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -23,6 +23,8 @@ import { WarningArrows } from './WarningArrows';
 import { CalendarSetupModal } from './CalendarSetupModal';
 import { CalendarView } from './CalendarView';
 import { MiniCalendar } from './MiniCalendar';
+import { AddPlantsModal } from './AddPlantsModal';
+import type { AddPlantsResult } from './AddPlantsModal';
 import { SvgIcon } from '../../../components/ui/SvgIcon';
 import { icons } from '../../../components/ui/icons';
 import { theme } from '../../../styles/theme';
@@ -39,6 +41,7 @@ import { gardensApi } from '../../../api/gardens';
 import { recommendationsApi } from '../../../api/recommendations';
 import type { CalendarResponse } from '../../../api/recommendations';
 import type { CalendarSetupResult } from './CalendarSetupModal';
+import { toast } from '../../../store/toast.store';
 import styles from '../styles/garden-editor.module.css';
 
 interface Props {
@@ -88,6 +91,42 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
   const user = useAuthStore((s) => s.user);
   const [calendarView, setCalendarView] = useState<'none' | 'setup' | 'full' | 'mini'>('none');
   const [calendarData, setCalendarData] = useState<CalendarResponse | null>(null);
+  const [showAddPlantsModal, setShowAddPlantsModal] = useState(false);
+  const [calendarVersion, setCalendarVersion] = useState(0);
+
+  const newPlantsForCalendar = useMemo(() => {
+    if (!calendarData) return [];
+    const calendarSlugs = new Set(calendarData.events.map((e) => e.plantSlug));
+    const seen = new Set<string>();
+    return placedPlants.filter((p) => {
+      if (calendarSlugs.has(p.slug) || seen.has(p.slug)) return false;
+      seen.add(p.slug);
+      return true;
+    });
+  }, [placedPlants, calendarData]);
+
+  const plantInfoBySlug = useMemo(() => {
+    const map: Record<string, { name: string; imageUrl?: string }> = {};
+    const seen = new Set<string>();
+    for (const p of placedPlants) {
+      if (seen.has(p.slug)) continue;
+      seen.add(p.slug);
+      map[p.slug] = { name: p.name, imageUrl: p.imageUrl };
+    }
+    return map;
+  }, [placedPlants]);
+
+  const plantingDays = useMemo(() => {
+    const map: Record<string, { name: string; imageUrl?: string }[]> = {};
+    const seen = new Set<string>();
+    for (const p of placedPlants) {
+      if (!p.plantedAt || seen.has(p.slug)) continue;
+      seen.add(p.slug);
+      if (!map[p.plantedAt]) map[p.plantedAt] = [];
+      map[p.plantedAt].push({ name: p.name, imageUrl: p.imageUrl });
+    }
+    return map;
+  }, [placedPlants]);
 
   useEffect(() => {
     if (!activeGardenId) return;
@@ -96,7 +135,11 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
         setCalendarData(res.data);
         setCalendarView('mini');
       })
-      .catch(() => { /* no calendar yet */ });
+      .catch((err) => {
+        if (err?.response?.status !== 404) {
+          toast.error('Failed to load calendar data.');
+        }
+      });
   }, [activeGardenId]);
 
   const handleCalendarOpen = () => {
@@ -108,23 +151,28 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
   };
 
   const handleCalendarGenerate = async (result: CalendarSetupResult) => {
-    if (!activeGardenId || !gardenName || !user) return;
+    if (!user) throw new Error('You must be logged in.');
+    if (!activeGardenId) throw new Error('Save your garden before generating a calendar.');
 
-    // Update plant state with variety/plantedAt from setup
+    // Build updated plants list with variety/plantedAt from setup
+    const updatedPlants = placedPlants.map((p) => {
+      const ps = result.plantSettings.find((s) => s.slug === p.slug);
+      return ps ? { ...p, variety: ps.variety || undefined, plantedAt: ps.plantedAt } : p;
+    });
+
+    // Sync variety/plantedAt into React state
     result.plantSettings.forEach((ps) => {
       placedPlants
         .filter((p) => p.slug === ps.slug)
         .forEach((p) => updatePlant(p.id, { variety: ps.variety || undefined, plantedAt: ps.plantedAt }));
     });
 
-    // Build updated list synchronously for the save call
-    const updatedPlants = placedPlants.map((p) => {
-      const ps = result.plantSettings.find((s) => s.slug === p.slug);
-      return ps ? { ...p, variety: ps.variety || undefined, plantedAt: ps.plantedAt } : p;
-    });
+    // Save garden with updated plant data so recommendation-service can read it
+    const name = gardenName ?? (await gardensApi.getAll().then((r) => r.data.find((g) => g._id === activeGardenId)?.name));
+    if (!name) throw new Error('Could not load garden name. Please try again.');
 
     await gardensApi.update(activeGardenId, {
-      name: gardenName,
+      name,
       placedPlants: updatedPlants,
       plotWidthM,
       plotHeightM,
@@ -144,6 +192,41 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
 
     setCalendarData(response.data);
     setCalendarView('full');
+    toast.success('Care calendar generated!');
+  };
+
+  const handleAddNewPlants = async (result: AddPlantsResult) => {
+    if (!activeGardenId) throw new Error('Save your garden before updating the calendar.');
+
+    const updatedPlants = placedPlants.map((p) => {
+      const ps = result.plantSettings.find((s) => s.slug === p.slug);
+      return ps ? { ...p, variety: ps.variety || undefined, plantedAt: ps.plantedAt } : p;
+    });
+
+    result.plantSettings.forEach((ps) => {
+      placedPlants
+        .filter((p) => p.slug === ps.slug)
+        .forEach((p) => updatePlant(p.id, { variety: ps.variety || undefined, plantedAt: ps.plantedAt }));
+    });
+
+    const name = gardenName ?? (await gardensApi.getAll().then((r) => r.data.find((g) => g._id === activeGardenId)?.name));
+    if (!name) throw new Error('Could not load garden name. Please try again.');
+
+    await gardensApi.update(activeGardenId, {
+      name,
+      placedPlants: updatedPlants,
+      plotWidthM,
+      plotHeightM,
+      metersPerCell: plotScale.metersPerCell,
+    });
+
+    const slugs = result.plantSettings.map((s) => s.slug);
+    const response = await recommendationsApi.addPlants(activeGardenId, slugs);
+
+    setCalendarData(response.data);
+    setCalendarVersion((v) => v + 1);
+    setShowAddPlantsModal(false);
+    toast.success('Calendar updated with new plants!');
   };
 
   const { activeWarnings } = useCompatibility(placedPlants);
@@ -306,6 +389,7 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
           isSaving={isSaving}
           autoSaveStatus={autoSaveStatus}
           hasCalendar={!!calendarData}
+          canUseCalendar={!!activeGardenId}
           onZoomIn={zoomIn}
           onZoomOut={zoomOut}
           onPlotScaleChange={changePlotScale}
@@ -407,12 +491,25 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
 
       {calendarView === 'full' && calendarData && activeGardenId && (
         <CalendarView
+          key={calendarVersion}
           data={calendarData}
           gardenId={activeGardenId}
+          newPlants={newPlantsForCalendar.map((p) => ({ slug: p.slug, name: p.name }))}
+          plantingDays={plantingDays}
+          plantInfoBySlug={plantInfoBySlug}
           onMinimize={() => setCalendarView('mini')}
           onClose={() => setCalendarView('none')}
-          onDelete={() => { setCalendarData(null); setCalendarView('none'); }}
+          onDelete={() => { setCalendarData(null); setCalendarView('none'); toast.info('Calendar deleted.'); }}
           onDataUpdate={setCalendarData}
+          onRequestAddPlants={() => setShowAddPlantsModal(true)}
+        />
+      )}
+
+      {showAddPlantsModal && (
+        <AddPlantsModal
+          newPlants={newPlantsForCalendar}
+          onAdd={handleAddNewPlants}
+          onClose={() => setShowAddPlantsModal(false)}
         />
       )}
 

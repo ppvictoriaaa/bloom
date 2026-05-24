@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import type { CalendarEvent, CalendarResponse, EventStatus, EventType } from '../../../api/recommendations';
+import type { CalendarEvent, CalendarResponse, EventStatus, EventType, WeatherDay } from '../../../api/recommendations';
 import { recommendationsApi } from '../../../api/recommendations';
+import { toast } from '../../../store/toast.store';
 import styles from '../styles/calendar-view.module.css';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -90,21 +91,34 @@ interface TooltipData {
 interface Props {
   data: CalendarResponse;
   gardenId: string;
+  newPlants: { slug: string; name: string }[];
+  plantingDays: Record<string, { name: string; imageUrl?: string }[]>;
+  plantInfoBySlug: Record<string, { name: string; imageUrl?: string }>;
   onMinimize: () => void;
   onClose: () => void;
   onDelete: () => void;
   onDataUpdate: (data: CalendarResponse) => void;
+  onRequestAddPlants: () => void;
 }
 
-export const CalendarView = ({ data, gardenId, onMinimize, onClose, onDelete, onDataUpdate }: Props) => {
+export const CalendarView = ({ data, gardenId, newPlants, plantingDays, plantInfoBySlug, onMinimize, onClose, onDelete, onDataUpdate, onRequestAddPlants }: Props) => {
   const [events, setEvents] = useState<CalendarEvent[]>(data.events);
+  const [weatherDays, setWeatherDays] = useState<WeatherDay[]>(data.weatherDays ?? []);
   const [filter, setFilter]   = useState<EventType | 'all'>('all');
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [refreshNotice, setRefreshNotice] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [statusPopover, setStatusPopover] = useState<{ event: CalendarEvent; x: number; y: number } | null>(null);
+  const [plantingTooltip, setPlantingTooltip] = useState<{ names: string; x: number; y: number } | null>(null);
+  const [dayModalDate, setDayModalDate] = useState<string | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Weather by date for O(1) icon lookup
+  const weatherByDate = useMemo(() => {
+    const map = new Map<string, WeatherDay>();
+    weatherDays.forEach((d) => map.set(d.date, d));
+    return map;
+  }, [weatherDays]);
 
   // Group events by date key for O(1) lookup
   const eventsByDate = useMemo(() => {
@@ -116,6 +130,21 @@ export const CalendarView = ({ data, gardenId, onMinimize, onClose, onDelete, on
     });
     return map;
   }, [events]);
+
+  const dayModalEvents = dayModalDate ? (eventsByDate.get(dayModalDate) ?? []) : [];
+
+  const harvestingByDate = useMemo(() => {
+    const map = new Map<string, { name: string; imageUrl?: string }[]>();
+    events.forEach((e) => {
+      if (e.type !== 'harvesting') return;
+      const info = plantInfoBySlug[e.plantSlug];
+      if (!info) return;
+      const list = map.get(e.date) ?? [];
+      if (!list.some((p) => p.name === info.name)) list.push(info);
+      map.set(e.date, list);
+    });
+    return map;
+  }, [events, plantInfoBySlug]);
 
   const months = useMemo(() => getMonthRange(data.calendarStart, data.calendarEnd), [data]);
 
@@ -131,28 +160,32 @@ export const CalendarView = ({ data, gardenId, onMinimize, onClose, onDelete, on
 
   // ── Delete calendar ──────────────────────────────────────────────────────
   const handleDelete = async () => {
-    await recommendationsApi.deleteCalendar(gardenId);
-    onDelete();
+    try {
+      await recommendationsApi.deleteCalendar(gardenId);
+      onDelete();
+    } catch {
+      toast.error('Failed to delete calendar. Please try again.');
+      setConfirmDelete(false);
+    }
   };
 
   // ── Weather refresh ──────────────────────────────────────────────────────
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    setRefreshNotice('');
     try {
       const res = await recommendationsApi.refreshWeather(gardenId);
-      setRefreshNotice(res.data.notice);
-      // Re-fetch full calendar to get updated dates
       const updated = await recommendationsApi.getCalendar(gardenId);
       const newData = updated.data;
       setEvents(newData.events);
+      setWeatherDays(newData.weatherDays ?? []);
       onDataUpdate(newData);
+      toast.success(res.data.notice);
     } catch {
-      setRefreshNotice('Failed to refresh weather. Please try again.');
+      toast.error('Failed to refresh weather. Please try again.');
     } finally {
       setRefreshing(false);
     }
-  }, [gardenId, data, onDataUpdate]);
+  }, [gardenId, onDataUpdate]);
 
   // ── Event status update ──────────────────────────────────────────────────
   const handleStatusUpdate = useCallback(async (event: CalendarEvent, status: EventStatus) => {
@@ -190,7 +223,7 @@ export const CalendarView = ({ data, gardenId, onMinimize, onClose, onDelete, on
         <div className={styles.header}>
           <div className={styles.headerLeft}>
             <h2 className={styles.title}>Care Calendar</h2>
-            {data.weatherApplied && (
+            {data.weatherApplied && data.weatherAccuracyDays > 0 && (
               <span className={styles.weatherBadge}>
                 🌤 Weather applied for {data.weatherAccuracyDays} days
               </span>
@@ -224,11 +257,8 @@ export const CalendarView = ({ data, gardenId, onMinimize, onClose, onDelete, on
           </div>
         </div>
 
-        {/* Weather notice */}
-        {(refreshNotice || data.notice) && (
-          <div className={styles.notice}>
-            {refreshNotice || data.notice}
-          </div>
+        {data.notice && (
+          <div className={styles.notice}>{data.notice}</div>
         )}
 
         {/* ── Filters ── */}
@@ -243,6 +273,18 @@ export const CalendarView = ({ data, gardenId, onMinimize, onClose, onDelete, on
             </button>
           ))}
         </div>
+
+        {/* ── New plants banner ── */}
+        {newPlants.length > 0 && (
+          <div className={styles.newPlantsBanner}>
+            <span className={styles.newPlantsText}>
+              🌱 New plants added: <strong>{newPlants.map((p) => p.name).join(', ')}</strong>
+            </span>
+            <button className={styles.newPlantsBtn} onClick={onRequestAddPlants}>
+              Add to calendar
+            </button>
+          </div>
+        )}
 
         {/* ── Calendar body ── */}
         <div className={styles.body} ref={bodyRef} onClick={() => setStatusPopover(null)}>
@@ -266,8 +308,60 @@ export const CalendarView = ({ data, gardenId, onMinimize, onClose, onDelete, on
                     const key = toDateKey(new Date(year, month, day));
                     const dayEvents = filteredEventsByDate.get(key) ?? [];
                     const isToday = key === toDateKey(new Date());
+                    const wx = weatherByDate.get(key);
+                    const hasRain = wx && wx.precip >= 2;
+                    const hasHeat = wx && wx.maxTemp >= 30 && !hasRain;
                     return (
-                      <div key={i} className={`${styles.dayCell} ${isToday ? styles.dayCellToday : ''}`}>
+                      <div
+                        key={i}
+                        className={`${styles.dayCell} ${isToday ? styles.dayCellToday : ''} ${hasRain ? styles.dayCellRain : ''} ${hasHeat ? styles.dayCellHeat : ''}`}
+                        title={hasRain ? `Rain: ${wx!.precip.toFixed(1)} mm` : hasHeat ? `Heat: ${wx!.maxTemp}°C` : undefined}
+                        onClick={() => { setStatusPopover(null); setDayModalDate(key); }}
+                      >
+                        {(hasRain || hasHeat) && (
+                          <span className={styles.weatherBg} aria-hidden="true">
+                            {hasRain ? '💧' : '☀️'}
+                          </span>
+                        )}
+                        {harvestingByDate.get(key) && (
+                          <span className={`${styles.plantingBg} ${(harvestingByDate.get(key)!.length > 4 ? styles.plantingBgMany : harvestingByDate.get(key)!.length > 1 ? styles.plantingBgMulti : '')}`}>
+                            {harvestingByDate.get(key)!.map((plant, idx) => (
+                              <span
+                                key={idx}
+                                className={styles.plantingBgItem}
+                                onMouseEnter={(e) => {
+                                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                  setPlantingTooltip({ names: plant.name, x: rect.left + rect.width / 2, y: rect.top });
+                                }}
+                                onMouseLeave={() => setPlantingTooltip(null)}
+                              >
+                                {plant.imageUrl
+                                  ? <img src={plant.imageUrl} alt={plant.name} className={styles.plantingBgImg} />
+                                  : <span className={styles.plantingBgEmoji}>🌾</span>}
+                              </span>
+                            ))}
+                          </span>
+                        )}
+
+                        {plantingDays[key] && (
+                          <span className={`${styles.plantingBg} ${plantingDays[key].length > 1 ? (plantingDays[key].length > 4 ? styles.plantingBgMany : styles.plantingBgMulti) : ''}`}>
+                            {plantingDays[key].map((plant, idx) => (
+                              <span
+                                key={idx}
+                                className={styles.plantingBgItem}
+                                onMouseEnter={(e) => {
+                                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                  setPlantingTooltip({ names: plant.name, x: rect.left + rect.width / 2, y: rect.top });
+                                }}
+                                onMouseLeave={() => setPlantingTooltip(null)}
+                              >
+                                {plant.imageUrl
+                                  ? <img src={plant.imageUrl} alt={plant.name} className={styles.plantingBgImg} />
+                                  : <span className={styles.plantingBgEmoji}>🌱</span>}
+                              </span>
+                            ))}
+                          </span>
+                        )}
                         <span className={styles.dayNumber}>{day}</span>
                         {dayEvents.length > 0 && (
                           <div className={styles.dotsRow}>
@@ -342,6 +436,21 @@ export const CalendarView = ({ data, gardenId, onMinimize, onClose, onDelete, on
         </div>
       )}
 
+      {/* ── Planting tooltip ── */}
+      {plantingTooltip && (
+        <div
+          className={styles.tooltip}
+          style={{ left: plantingTooltip.x, top: plantingTooltip.y - 8 }}
+          onMouseEnter={() => setPlantingTooltip(null)}
+        >
+          <div className={styles.tooltipIcon}>🌱</div>
+          <div className={styles.tooltipContent}>
+            <p className={styles.tooltipTitle}>Planting day</p>
+            <p className={styles.tooltipMeta}>{plantingTooltip.names}</p>
+          </div>
+        </div>
+      )}
+
       {/* ── Status popover ── */}
       {statusPopover && (
         <div
@@ -349,15 +458,69 @@ export const CalendarView = ({ data, gardenId, onMinimize, onClose, onDelete, on
           style={{ left: statusPopover.x, top: statusPopover.y }}
           onClick={(e) => e.stopPropagation()}
         >
-          {(['planned', 'done', 'skipped'] as EventStatus[]).map((s) => (
-            <button
-              key={s}
-              className={`${styles.statusOption} ${statusPopover.event.status === s ? styles.statusOptionActive : ''}`}
-              onClick={() => handleStatusUpdate(statusPopover.event, s)}
-            >
-              {STATUS_LABELS[s]}
-            </button>
-          ))}
+          {(['planned', 'done', 'skipped'] as EventStatus[]).map((s) => {
+            const isFuture = statusPopover.event.date > toDateKey(new Date());
+            const isDisabled = s === 'done' && isFuture;
+            return (
+              <button
+                key={s}
+                className={`${styles.statusOption} ${statusPopover.event.status === s ? styles.statusOptionActive : ''} ${isDisabled ? styles.statusOptionDisabled : ''}`}
+                onClick={() => !isDisabled && handleStatusUpdate(statusPopover.event, s)}
+                title={isDisabled ? 'Cannot mark future events as done' : undefined}
+              >
+                {STATUS_LABELS[s]}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Day detail modal ── */}
+      {dayModalDate && (
+        <div className={styles.dayModalOverlay} onClick={() => setDayModalDate(null)}>
+          <div className={styles.dayModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.dayModalHeader}>
+              <h3 className={styles.dayModalDate}>{formatDate(dayModalDate)}</h3>
+              <button className={styles.dayModalClose} onClick={() => setDayModalDate(null)}>✕</button>
+            </div>
+
+            {plantingDays[dayModalDate] && (
+              <div className={styles.dayModalPlanting}>
+                🌱 Planted: <strong>{plantingDays[dayModalDate].map((p) => p.name).join(', ')}</strong>
+              </div>
+            )}
+
+            {dayModalEvents.length === 0 ? (
+              <p className={styles.dayModalEmpty}>No events planned for this day.</p>
+            ) : (
+              <ul className={styles.dayModalList}>
+                {dayModalEvents.map((evt) => {
+                  const isFuture = evt.date > toDateKey(new Date());
+                  return (
+                    <li key={evt.id} className={styles.dayModalItem}>
+                      <span className={styles.dayModalIcon}>{EVENT_ICONS[evt.type]}</span>
+                      <span className={styles.dayModalTitle}>{evt.title}</span>
+                      <div className={styles.dayModalStatuses}>
+                        {(['planned', 'done', 'skipped'] as EventStatus[]).map((s) => {
+                          const isDisabled = s === 'done' && isFuture;
+                          return (
+                            <button
+                              key={s}
+                              className={`${styles.dayModalStatusBtn} ${evt.status === s ? styles.dayModalStatusBtnActive : ''} ${isDisabled ? styles.dayModalStatusBtnDisabled : ''}`}
+                              onClick={() => !isDisabled && handleStatusUpdate(evt, s)}
+                              title={isDisabled ? 'Cannot mark future events as done' : undefined}
+                            >
+                              {STATUS_LABELS[s]}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
         </div>
       )}
     </div>

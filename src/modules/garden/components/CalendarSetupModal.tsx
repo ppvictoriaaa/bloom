@@ -6,6 +6,7 @@ import {
   type GeocodedLocation,
   type PlantCareRule,
 } from '../../../api/recommendations';
+import { toast } from '../../../store/toast.store';
 import styles from '../styles/calendar-setup-modal.module.css';
 
 type SoilType = 'sandy' | 'loamy' | 'clay';
@@ -106,7 +107,7 @@ export const CalendarSetupModal = ({ placedPlants, onGenerate, onClose }: Props)
           }),
         );
       })
-      .catch(() => {/* rules fetch failed — show all plants without variety selects */})
+      .catch(() => { toast.info('Could not load variety data. You can still generate the calendar.'); })
       .finally(() => setLoadingRules(false));
 
     cityRef.current?.focus();

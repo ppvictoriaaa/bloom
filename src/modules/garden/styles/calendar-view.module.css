@@ -157,6 +157,39 @@
   flex-wrap: wrap;
 }
 
+/* ── New plants banner ── */
+.newPlantsBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 24px 0;
+  padding: 10px 14px;
+  background: rgba(74, 124, 89, 0.08);
+  border: 1px solid rgba(74, 124, 89, 0.22);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.newPlantsText {
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.newPlantsBtn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 7px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.newPlantsBtn:hover { opacity: 0.88; }
+
 .filterChip {
   height: 28px;
   padding: 0 13px;
@@ -234,6 +267,7 @@
 
 .dayCell {
   aspect-ratio: 1;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -243,7 +277,86 @@
   background: var(--color-bg);
   transition: border-color 0.12s, background 0.12s;
   min-width: 0;
+  cursor: pointer;
+}
+
+.dayCellRain { background: rgba(59, 130, 246, 0.07) !important; }
+.dayCellHeat { background: rgba(245, 158, 11, 0.07) !important; }
+
+.weatherBg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.plantingBg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.25;
+  z-index: 0;
+  border-radius: 7px;
+  overflow: hidden;
+  pointer-events: none;
+  padding: 2px;
+  padding-top: 10px;
+}
+
+/* single plant — one large icon centered */
+.plantingBgItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76%;
+  height: 76%;
+  pointer-events: auto;
   cursor: default;
+  flex-shrink: 0;
+}
+
+/* 2–4 plants — 2-column grid */
+.plantingBgMulti {
+  flex-wrap: wrap;
+  align-content: center;
+  gap: 1px;
+}
+
+.plantingBgMulti .plantingBgItem {
+  width: calc(50% - 1px);
+  height: calc(50% - 1px);
+}
+
+/* 5+ plants — 3-column grid */
+.plantingBgMany {
+  flex-wrap: wrap;
+  align-content: center;
+  gap: 1px;
+}
+
+.plantingBgMany .plantingBgItem {
+  width: calc(33.33% - 1px);
+  height: calc(33.33% - 1px);
+}
+
+.plantingBgImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.plantingBgEmoji {
+  font-size: 16px;
+  line-height: 1;
 }
 
 .dayCell:hover {
@@ -257,6 +370,8 @@
 }
 
 .dayNumber {
+  position: relative;
+  z-index: 1;
   font-size: 12px;
   font-weight: 500;
   color: var(--color-text);
@@ -266,6 +381,8 @@
 
 /* ── Event dots ── */
 .dotsRow {
+  position: relative;
+  z-index: 1;
   display: flex;
   gap: 2px;
   align-items: center;
@@ -303,6 +420,7 @@
   font-weight: 600;
   line-height: 1;
 }
+
 
 /* ── Legend ── */
 .legend {
@@ -420,6 +538,8 @@
 .statusOption:last-child { border-bottom: none; }
 .statusOption:hover { background: var(--color-bg); }
 .statusOptionActive { color: var(--color-primary); font-weight: 600; }
+.statusOptionDisabled { opacity: 0.38; cursor: not-allowed; }
+.statusOptionDisabled:hover { background: transparent; }
 
 /* ── Spinner ── */
 .spinner {
@@ -434,3 +554,131 @@
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Day detail modal ── */
+.dayModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.dayModal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.dayModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dayModalDate {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.dayModalClose {
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.dayModalClose:hover { background: var(--color-bg); color: var(--color-text); }
+
+.dayModalPlanting {
+  padding: 10px 20px;
+  font-size: 13px;
+  color: var(--color-primary);
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(74, 124, 89, 0.05);
+}
+
+.dayModalEmpty {
+  padding: 20px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin: 0;
+}
+
+.dayModalList {
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.dayModalItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+.dayModalItem:last-child { border-bottom: none; }
+
+.dayModalIcon { font-size: 16px; flex-shrink: 0; }
+
+.dayModalTitle {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dayModalStatuses {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.dayModalStatusBtn {
+  padding: 3px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.dayModalStatusBtn:hover:not(.dayModalStatusBtnDisabled):not(.dayModalStatusBtnActive) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.dayModalStatusBtnActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  cursor: default;
+}
+.dayModalStatusBtnDisabled { opacity: 0.35; cursor: not-allowed; }
