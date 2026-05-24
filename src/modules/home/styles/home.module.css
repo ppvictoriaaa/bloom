@@ -23,8 +23,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--font-size-page-sm);
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   margin: 0;
 }
@@ -38,7 +38,7 @@
 .navLink {
   background: none;
   border: none;
-  font-size: 0.9rem;
+  font-size: var(--font-size-lg);
   color: var(--color-text);
   cursor: pointer;
   padding: 0.25rem 0.5rem;
@@ -53,7 +53,7 @@
 .logoutButton {
   background: none;
   border: 1.5px solid var(--color-border);
-  font-size: 0.875rem;
+  font-size: var(--font-size-lg);
   color: var(--color-text-muted);
   cursor: pointer;
   padding: 0.375rem 0.875rem;
@@ -73,8 +73,8 @@
 }
 
 .greeting {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
   margin: 0 0 0.5rem;
 }
@@ -97,7 +97,7 @@
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  font-size: 0.875rem;
+  font-size: var(--font-size-lg);
   color: var(--color-text-muted);
   cursor: pointer;
   margin-bottom: -1px;
@@ -111,7 +111,7 @@
 .tabActive {
   color: var(--color-primary);
   border-bottom-color: var(--color-primary);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .tabItem {
@@ -127,7 +127,7 @@
 
 .tabItemActive .tabLabel {
   color: var(--color-primary);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .tabLabel {
@@ -137,7 +137,7 @@
   padding: 0.75rem 0.5rem 0.75rem 1.25rem;
   background: none;
   border: none;
-  font-size: 0.875rem;
+  font-size: var(--font-size-lg);
   color: var(--color-text-muted);
   cursor: pointer;
   transition: color 0.15s;
@@ -152,8 +152,8 @@
   background: none;
   border: none;
   color: var(--color-text-muted);
-  font-size: 16px;
-  line-height: 1;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-none);
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.15s, color 0.15s;
@@ -193,8 +193,8 @@
   border-radius: 8px;
   background: var(--color-primary);
   color: #fff;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: opacity 0.15s;
 }
@@ -205,7 +205,7 @@
 
 .hint {
   color: var(--color-text-muted);
-  font-size: 0.9rem;
+  font-size: var(--font-size-lg);
   margin: 0;
 }
 
@@ -255,8 +255,8 @@
   border-radius: 5px;
   background: transparent;
   color: var(--color-text-muted);
-  font-size: 16px;
-  line-height: 1;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-none);
   cursor: pointer;
   display: none;
   align-items: center;
@@ -289,7 +289,7 @@
 }
 
 .deleteConfirmText {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   white-space: nowrap;
 }
@@ -299,8 +299,8 @@
   padding: 2px 7px;
   border-radius: 4px;
   border: none;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
 }
 
@@ -325,13 +325,13 @@
 }
 
 .gardenName {
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text);
 }
 
 .gardenMeta {
-  font-size: 0.8rem;
+  font-size: var(--font-size-page-xs);
   color: var(--color-text-muted);
 }
 
@@ -357,17 +357,17 @@
 }
 
 .modalTitle {
-  font-size: 17px;
-  font-weight: 600;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   margin: 0;
 }
 
 .modalBody {
-  font-size: 14px;
+  font-size: var(--font-size-lg);
   color: var(--color-text-muted);
   margin: 0;
-  line-height: 1.5;
+  line-height: var(--line-height-relaxed);
 }
 
 .modalActions {
@@ -384,7 +384,7 @@
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--font-size-lg);
   transition: background 0.15s;
 }
 
@@ -399,8 +399,8 @@
   background: var(--color-error, #e53e3e);
   color: #fff;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
   transition: opacity 0.15s;
 }
 

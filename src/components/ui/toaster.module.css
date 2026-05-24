@@ -19,8 +19,8 @@
   border-radius: 10px;
   border: 1px solid transparent;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   pointer-events: all;
   animation: slideUp 0.2s ease;
   max-width: 380px;
@@ -29,13 +29,13 @@
 
 .message {
   flex: 1;
-  line-height: 1.4;
+  line-height: var(--line-height-normal);
 }
 
 .close {
   background: none;
   border: none;
-  font-size: 12px;
+  font-size: var(--font-size-md);
   cursor: pointer;
   opacity: 0.5;
   padding: 0 2px;

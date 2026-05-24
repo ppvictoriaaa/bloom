@@ -1,4 +1,46 @@
 export const theme = {
+  typography: {
+    fontFamily: {
+      sans: "'Share Tech', sans-serif",
+    },
+    // Pixel-based scale for dense editor UI; rem values for page-level headings
+    fontSize: {
+      '2xs':     '11px',   // micro labels, grid annotations
+      xs:        '12px',   // tiny labels, day numbers
+      sm:        '13px',   // hints, tags, secondary
+      md:        '14px',   // labels, small buttons
+      base:      '15px',   // primary body text
+      lg:        '16px',   // medium body, inputs
+      heading:   '17px',   // calendar date headers, tabs
+      body:      '1.05rem',// standard full-page body
+      xl:        '19px',   // subheadings
+      '2xl':     '21px',   // modal headings
+      icon:      '28px',   // large emoji / icon display
+      '3xl':     '1.6rem', // section headings
+      '4xl':     '1.85rem',// page headings
+      'page-xs': '0.9rem', // small page meta text
+      'page-sm': '1.35rem',// page card titles
+    },
+    fontWeight: {
+      light:    '300',
+      normal:   '400',
+      medium:   '500',
+      semibold: '600',
+      bold:     '700',
+    },
+    lineHeight: {
+      none:    '1',
+      tight:   '1.3',
+      normal:  '1.4',
+      relaxed: '1.5',
+    },
+    letterSpacing: {
+      normal:  '0',
+      wide:    '0.04em',
+      wider:   '0.05em',
+      widest:  '0.06em',
+    },
+  },
   colors: {
     // Core palette
     primary: '#4a7c59',

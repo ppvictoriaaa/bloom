@@ -23,8 +23,8 @@
 }
 
 .monthLabel {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
 }
 
@@ -55,7 +55,7 @@
   border-radius: 6px;
   background: none;
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--font-size-base);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -76,8 +76,8 @@
 }
 
 .weekday {
-  font-size: 9px;
-  font-weight: 600;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-muted);
   text-align: center;
   padding: 2px 0;
@@ -113,10 +113,10 @@
 }
 
 .dayNumber {
-  font-size: 10px;
-  font-weight: 500;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text);
-  line-height: 1;
+  line-height: var(--line-height-none);
 }
 
 /* ── Dots ── */
@@ -145,8 +145,8 @@
   border-radius: 7px;
   background: none;
   color: var(--color-primary);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: background 0.13s;
 }

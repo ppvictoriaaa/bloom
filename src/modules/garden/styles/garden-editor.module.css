@@ -12,9 +12,9 @@
 }
 
 .dragOverlayName {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--color-text);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .noSpaceOverlay {
@@ -41,10 +41,10 @@
 }
 
 .noSpaceText {
-  font-size: 14px;
+  font-size: var(--font-size-lg);
   color: var(--color-text);
   text-align: center;
-  line-height: 1.5;
+  line-height: var(--line-height-relaxed);
   margin: 0;
 }
 
@@ -54,7 +54,7 @@
   border: none;
   background: var(--color-primary);
   color: white;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
 }

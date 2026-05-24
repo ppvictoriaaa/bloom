@@ -161,13 +161,13 @@ export const GardenGrid = ({ placedPlants, plotConfig, onEditPlant, onResizePlan
                         x={mx}
                         y={my + 4}
                         textAnchor="middle"
-                        fontSize="10"
-                        fontWeight="700"
+                        fontSize={theme.typography.fontSize.xs}
+                        fontWeight={theme.typography.fontWeight.bold}
                         fill={theme.colors.lineLabel}
                         stroke={theme.colors.surface}
                         strokeWidth="3"
                         paintOrder="stroke"
-                        fontFamily="sans-serif"
+                        fontFamily={theme.typography.fontFamily.sans}
                       >
                         {label}
                       </text>

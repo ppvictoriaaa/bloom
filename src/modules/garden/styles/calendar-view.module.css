@@ -40,15 +40,15 @@
 }
 
 .title {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
   margin: 0;
 }
 
 .weatherBadge {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
   color: var(--color-primary);
   background: rgba(74, 124, 89, 0.1);
   border: 1px solid rgba(74, 124, 89, 0.2);
@@ -69,7 +69,7 @@
   border-radius: 7px;
   background: var(--color-surface);
   color: var(--color-text);
-  font-size: 13px;
+  font-size: var(--font-size-base);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -87,7 +87,7 @@
   border: 1px solid var(--color-border);
   border-radius: 7px;
   background: var(--color-surface);
-  font-size: 14px;
+  font-size: var(--font-size-lg);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -107,8 +107,8 @@
   border-radius: 7px;
   background: rgba(217, 79, 79, 0.1);
   color: #d94f4f;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s;
@@ -125,7 +125,7 @@
   border-radius: 7px;
   background: var(--color-surface);
   color: var(--color-text-muted);
-  font-size: 15px;
+  font-size: var(--font-size-heading);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -142,7 +142,7 @@
 .notice {
   margin: 14px 24px 0;
   padding: 9px 14px;
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-primary);
   background: rgba(74, 124, 89, 0.07);
   border: 1px solid rgba(74, 124, 89, 0.18);
@@ -172,7 +172,7 @@
 }
 
 .newPlantsText {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text);
 }
 
@@ -182,8 +182,8 @@
   border-radius: 7px;
   background: var(--color-primary);
   color: #fff;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   white-space: nowrap;
   transition: opacity 0.15s;
@@ -197,8 +197,8 @@
   border-radius: 20px;
   background: var(--color-surface);
   color: var(--color-text-muted);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
@@ -232,8 +232,8 @@
 }
 
 .monthTitle {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
   margin: 0 0 4px;
 }
@@ -245,13 +245,13 @@
 }
 
 .weekday {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-muted);
   text-align: center;
   padding: 4px 0;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 .daysGrid {
@@ -289,7 +289,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  font-size: var(--font-size-icon);
   opacity: 0.18;
   pointer-events: none;
   z-index: 0;
@@ -355,8 +355,8 @@
 }
 
 .plantingBgEmoji {
-  font-size: 16px;
-  line-height: 1;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-none);
 }
 
 .dayCell:hover {
@@ -372,10 +372,10 @@
 .dayNumber {
   position: relative;
   z-index: 1;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text);
-  line-height: 1;
+  line-height: var(--line-height-none);
   margin-bottom: 3px;
 }
 
@@ -415,10 +415,10 @@
 }
 
 .dotMore {
-  font-size: 9px;
+  font-size: var(--font-size-2xs);
   color: var(--color-text-muted);
-  font-weight: 600;
-  line-height: 1;
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-none);
 }
 
 
@@ -436,7 +436,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: var(--font-size-md);
   color: var(--color-text-muted);
 }
 
@@ -465,8 +465,8 @@
 }
 
 .tooltipIcon {
-  font-size: 18px;
-  line-height: 1;
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-none);
   flex-shrink: 0;
 }
 
@@ -478,8 +478,8 @@
 }
 
 .tooltipTitle {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   margin: 0;
   white-space: nowrap;
@@ -488,20 +488,20 @@
 }
 
 .tooltipMeta {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   margin: 0;
 }
 
 .tooltipShift {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--color-primary);
   margin: 0;
   font-style: italic;
 }
 
 .tooltipStatus {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   margin: 0;
 }
@@ -528,7 +528,7 @@
   background: none;
   border: none;
   border-bottom: 1px solid var(--color-border);
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text);
   cursor: pointer;
   text-align: left;
@@ -537,7 +537,7 @@
 
 .statusOption:last-child { border-bottom: none; }
 .statusOption:hover { background: var(--color-bg); }
-.statusOptionActive { color: var(--color-primary); font-weight: 600; }
+.statusOptionActive { color: var(--color-primary); font-weight: var(--font-weight-semibold); }
 .statusOptionDisabled { opacity: 0.38; cursor: not-allowed; }
 .statusOptionDisabled:hover { background: transparent; }
 
@@ -585,8 +585,8 @@
 }
 
 .dayModalDate {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
   margin: 0;
 }
@@ -597,7 +597,7 @@
   border: none;
   background: none;
   color: var(--color-text-muted);
-  font-size: 15px;
+  font-size: var(--font-size-heading);
   cursor: pointer;
   border-radius: 6px;
   display: flex;
@@ -609,7 +609,7 @@
 
 .dayModalPlanting {
   padding: 10px 20px;
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-primary);
   border-bottom: 1px solid var(--color-border);
   background: rgba(74, 124, 89, 0.05);
@@ -617,7 +617,7 @@
 
 .dayModalEmpty {
   padding: 20px;
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-text-muted);
   text-align: center;
   margin: 0;
@@ -640,12 +640,12 @@
 }
 .dayModalItem:last-child { border-bottom: none; }
 
-.dayModalIcon { font-size: 16px; flex-shrink: 0; }
+.dayModalIcon { font-size: var(--font-size-body); flex-shrink: 0; }
 
 .dayModalTitle {
   flex: 1;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text);
   min-width: 0;
   overflow: hidden;
@@ -665,8 +665,8 @@
   border-radius: 6px;
   background: transparent;
   color: var(--color-text-muted);
-  font-size: 11px;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s, background 0.15s;
   white-space: nowrap;
