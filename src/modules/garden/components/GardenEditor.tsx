@@ -23,6 +23,7 @@ import { WarningArrows } from './WarningArrows';
 import { CalendarSetupModal } from './CalendarSetupModal';
 import { CalendarView } from './CalendarView';
 import { MiniCalendar } from './MiniCalendar';
+import { NotificationSettingsModal } from '../../notifications/NotificationSettingsModal';
 import { AddPlantsModal } from './AddPlantsModal';
 import type { AddPlantsResult } from './AddPlantsModal';
 import { DuplicatePlantModal } from './DuplicatePlantModal';
@@ -93,6 +94,7 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
   const [calendarView, setCalendarView] = useState<'none' | 'setup' | 'full' | 'mini'>('none');
   const [calendarData, setCalendarData] = useState<CalendarResponse | null>(null);
   const [showAddPlantsModal, setShowAddPlantsModal] = useState(false);
+  const [showReminderModal, setShowReminderModal] = useState(false);
   const [calendarVersion, setCalendarVersion] = useState(0);
   const [pendingDuplicateCheck, setPendingDuplicateCheck] = useState<PendingDrop | null>(null);
 
@@ -406,6 +408,7 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
           onDimensionsChange={setPlotDimensions}
           onSave={saveGarden}
           onCalendarOpen={handleCalendarOpen}
+          onReminders={calendarData ? () => setShowReminderModal(true) : undefined}
         />
         <GardenGrid
           placedPlants={placedPlants}
@@ -527,6 +530,7 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
           onDelete={() => { setCalendarData(null); setCalendarView('none'); toast.info('Calendar deleted.'); }}
           onDataUpdate={setCalendarData}
           onRequestAddPlants={() => setShowAddPlantsModal(true)}
+          onReminders={() => setShowReminderModal(true)}
         />
       )}
 
@@ -535,6 +539,14 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
           newPlants={newPlantsForCalendar}
           onAdd={handleAddNewPlants}
           onClose={() => setShowAddPlantsModal(false)}
+        />
+      )}
+
+      {showReminderModal && activeGardenId && (
+        <NotificationSettingsModal
+          gardenId={activeGardenId}
+          gardenName={gardenName ?? activeGardenId}
+          onClose={() => setShowReminderModal(false)}
         />
       )}
 

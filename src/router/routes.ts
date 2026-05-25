@@ -4,4 +4,5 @@ export const RouteNames = {
   LOGIN: '/login',
   REGISTER: '/register',
   PROFILE: '/profile',
+  VERIFY_EMAIL: '/verify-email',
 } as const;

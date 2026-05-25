@@ -99,9 +99,10 @@ interface Props {
   onDelete: () => void;
   onDataUpdate: (data: CalendarResponse) => void;
   onRequestAddPlants: () => void;
+  onReminders?: () => void;
 }
 
-export const CalendarView = ({ data, gardenId, newPlants, plantingDays, plantInfoBySlug, onMinimize, onClose, onDelete, onDataUpdate, onRequestAddPlants }: Props) => {
+export const CalendarView = ({ data, gardenId, newPlants, plantingDays, plantInfoBySlug, onMinimize, onClose, onDelete, onDataUpdate, onRequestAddPlants, onReminders }: Props) => {
   const [events, setEvents] = useState<CalendarEvent[]>(data.events);
   const [weatherDays, setWeatherDays] = useState<WeatherDay[]>(data.weatherDays ?? []);
   const [filter, setFilter]   = useState<EventType | 'all'>('all');
@@ -230,6 +231,11 @@ export const CalendarView = ({ data, gardenId, newPlants, plantingDays, plantInf
             )}
           </div>
           <div className={styles.headerActions}>
+            {onReminders && (
+              <button className={styles.remindersBtn} onClick={onReminders}>
+                🔔 Reminders
+              </button>
+            )}
             <button
               className={styles.refreshBtn}
               onClick={handleRefresh}

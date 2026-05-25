@@ -6,6 +6,7 @@ import { LoginPage } from '../modules/auth/LoginPage'
 import { RegisterPage } from '../modules/auth/RegisterPage'
 import { HomePage } from '../modules/home/HomePage'
 import { ProfilePage } from '../modules/profile/ProfilePage'
+import { VerifyEmailPage } from '../modules/notifications/VerifyEmailPage'
 import { RouteNames } from './routes'
 
 export const AppRouter = () => {
@@ -21,6 +22,7 @@ export const AppRouter = () => {
 
         <Route path={RouteNames.LOGIN} element={<LoginPage />} />
         <Route path={RouteNames.REGISTER} element={<RegisterPage />} />
+        <Route path={RouteNames.VERIFY_EMAIL} element={<VerifyEmailPage />} />
 
         <Route element={<PrivateRoute />}>
           <Route path={RouteNames.HOME} element={<HomePage />} />

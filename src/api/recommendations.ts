@@ -96,6 +96,9 @@ export const recommendationsApi = {
   deleteCalendar: (gardenId: string) =>
     recClient.delete(`/care-calendar/${gardenId}`),
 
+  getGardensWithCalendar: (gardenIds: string[]) =>
+    recClient.get<string[]>(`/care-calendar/with-calendar?gardenIds=${gardenIds.join(',')}`),
+
   getPlantCareRules: (slugs: string[]): Promise<PlantCareRule[]> =>
     recClient
       .get<PlantCareRule[]>('/plant-care-rules')

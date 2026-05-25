@@ -142,6 +142,24 @@
   cursor: not-allowed;
 }
 
+.remindersButton {
+  padding: 0 12px;
+  height: 28px;
+  border: 1px solid #C17A5A;
+  border-radius: 6px;
+  background: none;
+  color: #C17A5A;
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.remindersButton:hover {
+  background: rgba(193, 122, 90, 0.08);
+}
+
 .saveButton {
   padding: 0 12px;
   height: 28px;

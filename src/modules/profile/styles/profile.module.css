@@ -92,3 +92,151 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ── Notifications section ── */
+.notifCard {
+  background: var(--color-surface);
+  border-radius: 16px;
+  border-top: 3px solid #C17A5A;
+  padding: 2rem;
+  max-width: 480px;
+  box-shadow: 0 4px 24px rgba(26, 46, 38, 0.15);
+  margin-top: 1.5rem;
+}
+
+.notifHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.notifTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.editBtn {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid #C17A5A;
+  border-radius: 8px;
+  background: none;
+  color: #C17A5A;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.editBtn:hover {
+  background: rgba(193, 122, 90, 0.08);
+}
+
+.notifRow {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notifItem {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.notifLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  min-width: 130px;
+  flex-shrink: 0;
+}
+
+.notifValue {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.notifVerified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  background: rgba(45, 74, 62, 0.1);
+  border: 1px solid rgba(45, 74, 62, 0.2);
+  border-radius: 20px;
+  padding: 1px 7px;
+  font-weight: var(--font-weight-semibold);
+  margin-left: 4px;
+}
+
+.notifEmpty {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.setupBtn {
+  margin-top: 4px;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid #C17A5A;
+  border-radius: 8px;
+  background: none;
+  color: #C17A5A;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background 0.15s;
+  align-self: flex-start;
+}
+
+.setupBtn:hover {
+  background: rgba(193, 122, 90, 0.08);
+}
+
+/* ── Per-garden reminders list ── */
+.notifSubtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: -0.75rem 0 1.25rem;
+}
+
+.gardenList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gardenRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.gardenInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.gardenName {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.notifMeta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}

@@ -22,6 +22,7 @@ interface Props {
   onDimensionsChange: (widthM: number, heightM: number) => void;
   onSave: () => void;
   onCalendarOpen: () => void;
+  onReminders?: () => void;
 }
 
 export const GardenToolbar = ({
@@ -39,6 +40,7 @@ export const GardenToolbar = ({
   onDimensionsChange,
   onSave,
   onCalendarOpen,
+  onReminders,
 }: Props) => {
   const { metersPerCell } = plotScale;
   const isKm = metersPerCell >= 1000;
@@ -107,6 +109,15 @@ export const GardenToolbar = ({
         >
           {hasCalendar ? '📅 Calendar' : '+ Calendar'}
         </button>
+
+        {hasCalendar && onReminders && (
+          <>
+            <span className={styles.separator} />
+            <button className={styles.remindersButton} onClick={onReminders}>
+              🔔 Reminders
+            </button>
+          </>
+        )}
 
         <span className={styles.separator} />
         {autoSaveStatus === 'saving' && <span className={styles.spinner} aria-label="Saving" />}
