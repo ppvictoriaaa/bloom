@@ -42,8 +42,12 @@ const cssVars: Record<string, string> = {
   '--letter-spacing-widest':  theme.typography.letterSpacing.widest,
 
   // Core palette
-  '--color-primary': theme.colors.primary,
+  '--color-primary':       theme.colors.primary,
+  '--color-primary-rgb':   theme.colors.primaryRgb,
   '--color-primary-light': theme.colors.primaryLight,
+  '--color-nav-bg':        theme.colors.navBg,
+  '--color-nav-text':      theme.colors.navText,
+  '--color-nav-text-rgb':  theme.colors.navTextRgb,
   '--color-bg': theme.colors.bg,
   '--color-surface': theme.colors.surface,
   '--color-border': theme.colors.border,

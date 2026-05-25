@@ -11,7 +11,7 @@ const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 const EVENT_COLORS: Record<EventType, string> = {
   watering:    '#3b82f6',
-  fertilizing: '#4a7c59',
+  fertilizing: '#41443a',
   harvesting:  '#f59e0b',
   care:        '#8b5cf6',
 };

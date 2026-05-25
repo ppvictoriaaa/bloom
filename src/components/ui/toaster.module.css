@@ -47,15 +47,15 @@
 
 /* ── Variants ── */
 .success {
-  background: #f0faf3;
-  border-color: rgba(74, 124, 89, 0.25);
-  color: #2d6a42;
+  background: var(--color-surface);
+  border-color: rgba(var(--color-primary-rgb), 0.4);
+  color: #2D4A3E;
 }
 
 .error {
-  background: #fff1f1;
-  border-color: rgba(217, 79, 79, 0.25);
-  color: #b83232;
+  background: var(--color-surface);
+  border-color: rgba(192, 57, 43, 0.4);
+  color: var(--color-error);
 }
 
 .info {

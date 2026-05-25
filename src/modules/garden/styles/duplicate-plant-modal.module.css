@@ -56,12 +56,12 @@
 
 .option:hover {
   border-color: var(--color-primary);
-  background: rgba(74, 124, 89, 0.04);
+  background: rgba(var(--color-primary-rgb), 0.04);
 }
 
 .optionActive {
   border-color: var(--color-primary);
-  background: rgba(74, 124, 89, 0.08);
+  background: rgba(var(--color-primary-rgb), 0.08);
 }
 
 .optionIcon {
@@ -142,7 +142,7 @@
   border: none;
   border-radius: 8px;
   background: var(--color-primary);
-  color: #fff;
+  color: #F4F0E8;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;

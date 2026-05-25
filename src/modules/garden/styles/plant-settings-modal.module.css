@@ -159,7 +159,7 @@
 }
 
 .deleteButton:hover {
-  background: #fee2e2;
+  background: rgba(192, 57, 43, 0.12);
 }
 
 .cancelButton {
@@ -182,7 +182,7 @@
   border: none;
   border-radius: 6px;
   background: var(--color-primary);
-  color: white;
+  color: #F4F0E8;
   cursor: pointer;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-medium);

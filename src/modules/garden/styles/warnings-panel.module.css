@@ -23,7 +23,7 @@
 
 .count {
   background: #ef4444;
-  color: #fff;
+  color: #F4F0E8;
   border-radius: 10px;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
@@ -93,6 +93,6 @@
   border-radius: 10px;
 }
 
-.badgeHigh   { background: #fee2e2; color: #dc2626; }
+.badgeHigh   { background: rgba(192, 57, 43, 0.12); color: #dc2626; }
 .badgeMedium { background: #ffedd5; color: #ea580c; }
 .badgeLow    { background: #fef9c3; color: #ca8a04; }

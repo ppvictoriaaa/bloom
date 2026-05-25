@@ -3,23 +3,22 @@ export const theme = {
     fontFamily: {
       sans: "'Share Tech', sans-serif",
     },
-    // Pixel-based scale for dense editor UI; rem values for page-level headings
     fontSize: {
-      '2xs':     '11px',   // micro labels, grid annotations
-      xs:        '12px',   // tiny labels, day numbers
-      sm:        '13px',   // hints, tags, secondary
-      md:        '14px',   // labels, small buttons
-      base:      '15px',   // primary body text
-      lg:        '16px',   // medium body, inputs
-      heading:   '17px',   // calendar date headers, tabs
-      body:      '1.05rem',// standard full-page body
-      xl:        '19px',   // subheadings
-      '2xl':     '21px',   // modal headings
-      icon:      '28px',   // large emoji / icon display
-      '3xl':     '1.6rem', // section headings
-      '4xl':     '1.85rem',// page headings
-      'page-xs': '0.9rem', // small page meta text
-      'page-sm': '1.35rem',// page card titles
+      '2xs':     '11px',
+      xs:        '12px',
+      sm:        '13px',
+      md:        '14px',
+      base:      '15px',
+      lg:        '16px',
+      heading:   '17px',
+      body:      '1.05rem',
+      xl:        '19px',
+      '2xl':     '21px',
+      icon:      '28px',
+      '3xl':     '1.6rem',
+      '4xl':     '1.85rem',
+      'page-xs': '0.9rem',
+      'page-sm': '1.35rem',
     },
     fontWeight: {
       light:    '300',
@@ -42,41 +41,34 @@ export const theme = {
     },
   },
   colors: {
-    // Core palette
-    primary: '#4a7c59',
-    primaryLight: '#6a9e76',
-    bg: '#f5f7f4',
-    surface: '#ffffff',
-    border: '#e2e8e0',
-    text: '#1a1f1b',
-    textMuted: '#6b7c6e',
-    error: '#d94f4f',
-    success: '#3a8f5a',
-
-    // Plant visualization
-    plantAreaBg: 'rgba(80, 160, 80, 0.08)',
-    plantAreaBorder: 'rgba(50, 130, 50, 0.25)',
-    plantText: '#2a5a2a',
-
-    // Grid canvas
-    gridBg: '#ffffff',
-    gridViewportBg: '#fafaf8',
-    gridLineMajor: '#b8b8b0',
-    gridLineMajorLarge: '#555550',
-    gridLineMinor: '#e2e2dc',
-    gridOver: '#f0f8f0',
-
-    // Warning banners
-    warningText: '#7a5200',
-    warningBg: '#fff8e1',
-    warningBorder: '#f0c040',
-
-    // Overlays
-    overlay: 'rgba(0, 0, 0, 0.35)',
-
-    // SVG distance lines
-    lineStroke: '#555555',
-    lineLabel: '#222222',
+    primary: '#2D4A3E',
+    primaryRgb: '45, 74, 62',
+    primaryLight: '#4A7063',
+    bg: '#F4F0E8',
+    surface: '#FDFCF9',
+    border: '#DDD8CF',
+    navBg: '#1A2E26',
+    navText: '#F4F0E8',
+    navTextRgb: '244, 240, 232',
+    text: '#1A2E26',
+    textMuted: '#7A8A83',
+    error: '#C0392B',
+    success: '#2D4A3E',
+    plantAreaBg: 'rgba(244, 240, 232, 0.22)',
+    plantAreaBorder: 'rgba(244, 240, 232, 0.65)',
+    plantText: '#1A2E26',
+    gridBg: '#1A2E26',
+    gridViewportBg: '#F4F0E8',
+    gridLineMajor: 'rgba(244, 240, 232, 0.20)',
+    gridLineMajorLarge: 'rgba(244, 240, 232, 0.48)',
+    gridLineMinor: 'rgba(244, 240, 232, 0.09)',
+    gridOver: '#1A2E26',
+    warningText: '#7A4F00',
+    warningBg: '#FEF3E2',
+    warningBorder: '#F5A623',
+    overlay: 'rgba(26, 46, 38, 0.52)',
+    lineStroke: '#2D4A3E',
+    lineLabel: '#2D4A3E',
   },
 } as const;
 

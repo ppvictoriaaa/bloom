@@ -5,12 +5,16 @@
   flex-direction: column;
   gap: 8px;
   overflow: hidden;
+  background: rgba(var(--color-primary-rgb), 0.05);
+  border-radius: 8px;
+  padding: 8px;
+  box-sizing: border-box;
 }
 
 .title {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-muted);
+  color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-wider);
   margin: 0;
@@ -68,14 +72,14 @@
 }
 
 .catChipActive {
-  background: rgba(74, 124, 89, 0.1);
+  background: rgba(var(--color-primary-rgb), 0.1);
   border-color: var(--color-primary);
   color: var(--color-primary);
   font-weight: var(--font-weight-semibold);
 }
 
 .catChipActive:hover {
-  background: rgba(74, 124, 89, 0.15);
+  background: rgba(var(--color-primary-rgb), 0.15);
 }
 
 /* ── List ── */

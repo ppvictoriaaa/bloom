@@ -52,10 +52,10 @@ export const GardenGrid = ({ placedPlants, plotConfig, onEditPlant, onResizePlan
   const minorCellSize = metersPerCell >= 5 ? Math.round(cellSize / 2) : cellSize;
 
   return (
-    <div ref={viewportRef} className={styles.viewport}>
+    <div ref={viewportRef} className={`${styles.viewport} ${isOver ? styles.viewportOver : ''}`}>
       <div
         ref={setNodeRef}
-        className={`${styles.grid} ${isOver ? styles.gridOver : ''}`}
+        className={styles.grid}
         style={
           {
             width: gridCols * cellSize,

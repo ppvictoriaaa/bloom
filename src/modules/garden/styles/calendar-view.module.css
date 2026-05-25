@@ -14,10 +14,11 @@
 .modal {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-primary);
   border-radius: 16px;
   width: 100%;
   max-width: 860px;
-  box-shadow: 0 16px 56px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 16px 56px rgba(26, 46, 38, 0.22);
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -50,8 +51,8 @@
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
   color: var(--color-primary);
-  background: rgba(74, 124, 89, 0.1);
-  border: 1px solid rgba(74, 124, 89, 0.2);
+  background: rgba(var(--color-primary-rgb), 0.1);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.2);
   border-radius: 20px;
   padding: 3px 10px;
 }
@@ -144,8 +145,8 @@
   padding: 9px 14px;
   font-size: var(--font-size-base);
   color: var(--color-primary);
-  background: rgba(74, 124, 89, 0.07);
-  border: 1px solid rgba(74, 124, 89, 0.18);
+  background: rgba(var(--color-primary-rgb), 0.07);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.18);
   border-radius: 8px;
 }
 
@@ -165,8 +166,8 @@
   gap: 12px;
   margin: 12px 24px 0;
   padding: 10px 14px;
-  background: rgba(74, 124, 89, 0.08);
-  border: 1px solid rgba(74, 124, 89, 0.22);
+  background: rgba(var(--color-primary-rgb), 0.08);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.22);
   border-radius: 10px;
   flex-wrap: wrap;
 }
@@ -181,7 +182,7 @@
   border: none;
   border-radius: 7px;
   background: var(--color-primary);
-  color: #fff;
+  color: #F4F0E8;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
@@ -210,7 +211,7 @@
 
 .filterChipActive {
   border-color: var(--color-primary);
-  background: rgba(74, 124, 89, 0.08);
+  background: rgba(var(--color-primary-rgb), 0.08);
   color: var(--color-primary);
 }
 
@@ -234,7 +235,7 @@
 .monthTitle {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
-  color: var(--color-text);
+  color: var(--color-primary);
   margin: 0 0 4px;
 }
 
@@ -366,7 +367,7 @@
 
 .dayCellToday {
   border-color: var(--color-primary) !important;
-  background: rgba(74, 124, 89, 0.06);
+  background: rgba(var(--color-primary-rgb), 0.13);
 }
 
 .dayNumber {
@@ -429,6 +430,7 @@
   padding: 14px 24px 18px;
   flex-wrap: wrap;
   border-top: 1px solid var(--color-border);
+  background: rgba(var(--color-primary-rgb), 0.03);
   margin-top: 4px;
 }
 
@@ -454,6 +456,7 @@
   z-index: 500;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-primary);
   border-radius: 10px;
   padding: 10px 13px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
@@ -612,7 +615,7 @@
   font-size: var(--font-size-base);
   color: var(--color-primary);
   border-bottom: 1px solid var(--color-border);
-  background: rgba(74, 124, 89, 0.05);
+  background: rgba(var(--color-primary-rgb), 0.05);
 }
 
 .dayModalEmpty {
@@ -678,7 +681,7 @@
 .dayModalStatusBtnActive {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: #F4F0E8;
   cursor: default;
 }
 .dayModalStatusBtnDisabled { opacity: 0.35; cursor: not-allowed; }

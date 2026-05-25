@@ -249,7 +249,7 @@ export const PlacedPlant = ({
           width: Math.round(totalWidth),
           height: Math.round(totalHeight),
           ...(plant.color && {
-            background: `${plant.color}1a`,
+            background: `${plant.color}4a`,
             borderColor: `${plant.color}50`,
           }),
         }}
