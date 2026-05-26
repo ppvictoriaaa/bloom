@@ -5,12 +5,20 @@ import { Toaster } from './components/ui/Toaster';
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  return (
+    <>
+      <AppRouter />
+      <Toaster />
+    </>
+  );
+};
+
 export const App = () => {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <AppRouter />
-        <Toaster />
+        <AppContent />
       </QueryClientProvider>
     </ThemeProvider>
   );

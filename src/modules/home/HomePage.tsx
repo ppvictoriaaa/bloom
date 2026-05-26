@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/auth.store';
+import { useUiStore } from '../../store/ui.store';
 import { useProfile } from '../../hooks/useProfile';
 import { RouteNames } from '../../router/routes';
 import { GardenEditor } from '../garden/components/GardenEditor';
@@ -10,6 +11,7 @@ import { icons } from '../../components/ui/icons';
 import { theme } from '../../styles/theme';
 import { gardensApi } from '../../api/gardens';
 import { toast } from '../../store/toast.store';
+import { AiChat } from '../ai/AiChat';
 import styles from './styles/home.module.css';
 
 interface GardenTab {
@@ -28,10 +30,14 @@ export const HomePage = () => {
   const { profile } = useProfile();
   const navigate = useNavigate();
 
+  const { openGardenIds, activeGardenId: savedActiveGardenId, setOpenGardenIds, setActiveGardenId } =
+    useUiStore();
+
   const [tabs, setTabs] = useState<GardenTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [pendingCloseTabId, setPendingCloseTabId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const restoredRef = useRef(false);
 
   const queryClient = useQueryClient();
   const { mutate: deleteGarden, isPending: isDeleting, variables: deletingId } = useMutation({
@@ -51,6 +57,43 @@ export const HomePage = () => {
     queryKey: ['gardens'],
     queryFn: () => gardensApi.getAll().then((r) => r.data),
   });
+
+  // Restore open tabs once gardens are loaded
+  useEffect(() => {
+    if (restoredRef.current || isLoading) return;
+    restoredRef.current = true; // always mark done once loading finishes, so sync effects can work
+
+    if (openGardenIds.length === 0 || gardens.length === 0) return;
+
+    const restoredTabs: GardenTab[] = openGardenIds
+      .filter((id) => gardens.some((g) => g._id === id))
+      .map((gardenId) => {
+        const garden = gardens.find((g) => g._id === gardenId)!;
+        return { tabId: nextTabId(), gardenId, label: garden.name, hasUnsaved: false };
+      });
+
+    if (restoredTabs.length === 0) return;
+    setTabs(restoredTabs);
+
+    if (savedActiveGardenId) {
+      const active = restoredTabs.find((t) => t.gardenId === savedActiveGardenId);
+      if (active) setActiveTabId(active.tabId);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
+
+  // Sync open tabs to store (only after restoration is done, to avoid wiping persisted state on mount)
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    setOpenGardenIds(tabs.filter((t) => t.gardenId !== null).map((t) => t.gardenId!));
+  }, [tabs, setOpenGardenIds]);
+
+  // Sync active tab to store
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    const active = tabs.find((t) => t.tabId === activeTabId);
+    setActiveGardenId(active?.gardenId ?? null);
+  }, [activeTabId, tabs, setActiveGardenId]);
 
   const handleLogout = () => {
     logout();
@@ -282,6 +325,8 @@ export const HomePage = () => {
           </div>
         </div>
       )}
+
+      {activeTabId !== null && <AiChat />}
     </div>
   );
 };
