@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import type { PlacedPlant, PlotConfig } from '../types/garden.types';
 import { PlacedPlant as PlacedPlantComponent } from './PlacedPlant';
 import { BASE_CELL_SIZE, MAJOR_GRID_INTERVAL, formatLength } from '../utils/grid.utils';
-import { getViolatingIds } from '../utils/plant-overlap.utils';
+import { getViolations } from '../utils/plant-overlap.utils';
 import { theme } from '../../../styles/theme';
 import styles from '../styles/garden-grid.module.css';
 
@@ -68,7 +68,7 @@ export const GardenGrid = ({ placedPlants, plotConfig, onEditPlant, onResizePlan
         }
       >
         {(() => {
-          const violatingIds = getViolatingIds(placedPlants);
+          const violations = getViolations(placedPlants);
           return placedPlants.map((plant) => (
             <PlacedPlantComponent
               key={plant.id}
@@ -77,7 +77,8 @@ export const GardenGrid = ({ placedPlants, plotConfig, onEditPlant, onResizePlan
               plotScale={plotScale}
               plotWidthM={plotWidthM}
               plotHeightM={plotHeightM}
-              hasViolation={violatingIds.has(plant.id)}
+              violatingNames={violations.get(plant.id) ?? []}
+              allPlants={placedPlants}
               onEdit={onEditPlant}
               onResize={onResizePlant}
               onHover={setHoveredPlantId}

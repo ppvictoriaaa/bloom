@@ -35,11 +35,13 @@ function getMonthGrid(year: number, month: number): (number | null)[] {
 
 interface Props {
   data: CalendarResponse;
+  isOutdated: boolean;
+  newPlantsCount: number;
   onExpand: () => void;
   onClose: () => void;
 }
 
-export const MiniCalendar = ({ data, onExpand, onClose }: Props) => {
+export const MiniCalendar = ({ data, isOutdated, newPlantsCount, onExpand, onClose }: Props) => {
   const today = new Date();
   const year  = today.getFullYear();
   const month = today.getMonth();
@@ -134,6 +136,17 @@ export const MiniCalendar = ({ data, onExpand, onClose }: Props) => {
           );
         })}
       </div>
+
+      {isOutdated && (
+        <div className={styles.outdatedWarning}>
+          ⚠ Calendar may be outdated
+        </div>
+      )}
+      {!isOutdated && newPlantsCount > 0 && (
+        <div className={styles.newPlantsWarning}>
+          🌱 {newPlantsCount} new plant{newPlantsCount > 1 ? 's' : ''} not in calendar
+        </div>
+      )}
 
       <button className={styles.openBtn} onClick={onExpand}>
         View full calendar

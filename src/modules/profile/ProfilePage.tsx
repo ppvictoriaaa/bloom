@@ -18,10 +18,12 @@ export const ProfilePage = () => {
         ← Back
       </button>
 
-      <ProfileForm
-        initialName={profile?.name ?? ""}
-        email={user?.email ?? ""}
-      />
+      <div className={styles.content}>
+        <ProfileForm
+          initialName={profile?.name ?? ""}
+          email={user?.email ?? ""}
+        />
+      </div>
     </div>
   );
 };

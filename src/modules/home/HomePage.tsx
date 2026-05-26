@@ -173,8 +173,8 @@ export const HomePage = () => {
     <div className={`${styles.container} ${isEditorActive ? styles.containerFull : ''}`}>
       <header className={styles.header}>
         <h1 className={styles.logo}>
-          <SvgIcon icon={icons.leaf} size={20} color={theme.colors.primary} />
-          Garden
+          <SvgIcon icon={icons.gardinum} size={60} />
+          Gardinum
         </h1>
         <nav className={styles.nav}>
           <button className={styles.navLink} onClick={() => navigate(RouteNames.PROFILE)}>

@@ -121,14 +121,14 @@ export const GardenToolbar = ({
 
         <span className={styles.separator} />
         {autoSaveStatus === 'saving' && <span className={styles.spinner} aria-label="Saving" />}
+        <button className={styles.saveButton} onClick={onSave} disabled={isSaving}>
+          Save
+        </button>
         {autoSaveStatus === 'saved' && (
           <svg className={styles.checkmark} viewBox="0 0 12 12" aria-label="Saved">
             <polyline points="1.5,6 4.5,9.5 10.5,2.5" />
           </svg>
         )}
-        <button className={styles.saveButton} onClick={onSave} disabled={isSaving}>
-          Save
-        </button>
       </div>
     </div>
   );

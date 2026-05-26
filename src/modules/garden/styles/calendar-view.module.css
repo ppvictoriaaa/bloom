@@ -79,6 +79,22 @@
 
 .remindersBtn:hover { background: rgba(193, 122, 90, 0.08); }
 
+.editSettingsBtn {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.editSettingsBtn:hover { background: var(--color-bg); color: var(--color-text); }
+
 .refreshBtn {
   height: 30px;
   padding: 0 12px;
@@ -173,6 +189,39 @@
   padding: 16px 24px 0;
   flex-wrap: wrap;
 }
+
+/* ── Outdated banner ── */
+.outdatedBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 24px 0;
+  padding: 10px 14px;
+  background: rgba(217, 158, 11, 0.08);
+  border: 1px solid rgba(217, 158, 11, 0.3);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.outdatedText {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+}
+
+.outdatedBtn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 7px;
+  background: #d97706;
+  color: #fff;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.outdatedBtn:hover { opacity: 0.88; }
 
 /* ── New plants banner ── */
 .newPlantsBanner {
@@ -667,9 +716,7 @@
   font-weight: var(--font-weight-medium);
   color: var(--color-text);
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-word;
 }
 
 .dayModalStatuses {

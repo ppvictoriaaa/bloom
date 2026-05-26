@@ -137,6 +137,29 @@
   flex-shrink: 0;
 }
 
+/* ── Outdated warning ── */
+.outdatedWarning {
+  margin-top: 6px;
+  padding: 5px 8px;
+  font-size: var(--font-size-sm);
+  color: #92400e;
+  background: rgba(217, 158, 11, 0.1);
+  border: 1px solid rgba(217, 158, 11, 0.3);
+  border-radius: 7px;
+  text-align: center;
+}
+
+.newPlantsWarning {
+  margin-top: 6px;
+  padding: 5px 8px;
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb), 0.08);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.2);
+  border-radius: 7px;
+  text-align: center;
+}
+
 /* ── Open button ── */
 .openBtn {
   width: 100%;

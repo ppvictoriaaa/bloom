@@ -93,10 +93,21 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
   const user = useAuthStore((s) => s.user);
   const [calendarView, setCalendarView] = useState<'none' | 'setup' | 'full' | 'mini'>('none');
   const [calendarData, setCalendarData] = useState<CalendarResponse | null>(null);
+  const [lastCalendarSetup, setLastCalendarSetup] = useState<CalendarSetupResult | null>(null);
   const [showAddPlantsModal, setShowAddPlantsModal] = useState(false);
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [calendarVersion, setCalendarVersion] = useState(0);
   const [pendingDuplicateCheck, setPendingDuplicateCheck] = useState<PendingDrop | null>(null);
+
+  const isCalendarOutdated = useMemo(() => {
+    if (!calendarData) return false;
+    const currentKeys = new Set(placedPlants.map((p) => p.customName ?? p.slug));
+    const calendarSlugs = new Set(calendarData.events.map((e) => e.plantLabel ?? e.plantSlug));
+    for (const key of calendarSlugs) {
+      if (!currentKeys.has(key)) return true;
+    }
+    return false;
+  }, [calendarData, placedPlants]);
 
   const newPlantsForCalendar = useMemo(() => {
     if (!calendarData) return [];
@@ -136,6 +147,12 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
 
   useEffect(() => {
     if (!activeGardenId) return;
+
+    const raw = localStorage.getItem(`calendar-setup-${activeGardenId}`);
+    if (raw) {
+      try { setLastCalendarSetup(JSON.parse(raw)); } catch {}
+    }
+
     recommendationsApi.getCalendar(activeGardenId)
       .then((res) => {
         setCalendarData(res.data);
@@ -194,6 +211,8 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
       soilType: result.soilType,
     });
 
+    setLastCalendarSetup(result);
+    localStorage.setItem(`calendar-setup-${activeGardenId}`, JSON.stringify(result));
     setCalendarData(response.data);
     setCalendarView('full');
     toast.success('Care calendar generated!');
@@ -512,8 +531,10 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
       {calendarView === 'setup' && (
         <CalendarSetupModal
           placedPlants={placedPlants}
+          isEditing={!!calendarData}
+          initialValues={lastCalendarSetup ?? undefined}
           onGenerate={handleCalendarGenerate}
-          onClose={() => setCalendarView('none')}
+          onClose={() => setCalendarView(calendarData ? 'full' : 'none')}
         />
       )}
 
@@ -525,12 +546,14 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
           newPlants={newPlantsForCalendar.map((p) => ({ slug: p.slug, name: p.customName ?? p.name }))}
           plantingDays={plantingDays}
           plantInfoBySlug={plantInfoBySlug}
+          isOutdated={isCalendarOutdated}
           onMinimize={() => setCalendarView('mini')}
           onClose={() => setCalendarView('none')}
           onDelete={() => { setCalendarData(null); setCalendarView('none'); toast.info('Calendar deleted.'); }}
           onDataUpdate={setCalendarData}
           onRequestAddPlants={() => setShowAddPlantsModal(true)}
           onReminders={() => setShowReminderModal(true)}
+          onEditSettings={() => setCalendarView('setup')}
         />
       )}
 
@@ -553,6 +576,8 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
       {calendarView === 'mini' && calendarData && (
         <MiniCalendar
           data={calendarData}
+          isOutdated={isCalendarOutdated}
+          newPlantsCount={newPlantsForCalendar.length}
           onExpand={() => setCalendarView('full')}
           onClose={() => setCalendarView('none')}
         />

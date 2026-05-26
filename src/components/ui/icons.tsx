@@ -8,6 +8,7 @@ import SeedlingIcon from './icons/seedling.svg?react';
 import CarrotIcon from './icons/carrot.svg?react';
 import PepperIcon from './icons/pepper.svg?react';
 import PotatoIcon from './icons/potato.svg?react';
+import GardinumIcon from './icons/logo.svg?react';
 
 export const icons = {
   // ui
@@ -16,6 +17,7 @@ export const icons = {
   plus: PlusIcon as IconDef,
   minus: MinusIcon as IconDef,
   leaf: LeafIcon as IconDef,
+  gardinum: GardinumIcon as IconDef,
   // Plants
   seedling: SeedlingIcon as IconDef,
   carrot: CarrotIcon as IconDef,

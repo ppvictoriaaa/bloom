@@ -94,15 +94,17 @@ interface Props {
   newPlants: { slug: string; name: string }[];
   plantingDays: Record<string, { name: string; imageUrl?: string }[]>;
   plantInfoBySlug: Record<string, { name: string; imageUrl?: string }>;
+  isOutdated: boolean;
   onMinimize: () => void;
   onClose: () => void;
   onDelete: () => void;
   onDataUpdate: (data: CalendarResponse) => void;
   onRequestAddPlants: () => void;
   onReminders?: () => void;
+  onEditSettings: () => void;
 }
 
-export const CalendarView = ({ data, gardenId, newPlants, plantingDays, plantInfoBySlug, onMinimize, onClose, onDelete, onDataUpdate, onRequestAddPlants, onReminders }: Props) => {
+export const CalendarView = ({ data, gardenId, newPlants, plantingDays, plantInfoBySlug, isOutdated, onMinimize, onClose, onDelete, onDataUpdate, onRequestAddPlants, onReminders, onEditSettings }: Props) => {
   const [events, setEvents] = useState<CalendarEvent[]>(data.events);
   const [weatherDays, setWeatherDays] = useState<WeatherDay[]>(data.weatherDays ?? []);
   const [filter, setFilter]   = useState<EventType | 'all'>('all');
@@ -236,6 +238,9 @@ export const CalendarView = ({ data, gardenId, newPlants, plantingDays, plantInf
                 🔔 Reminders
               </button>
             )}
+            <button className={styles.editSettingsBtn} onClick={onEditSettings} title="Edit calendar settings">
+              ⚙ Edit settings
+            </button>
             <button
               className={styles.refreshBtn}
               onClick={handleRefresh}
@@ -279,6 +284,18 @@ export const CalendarView = ({ data, gardenId, newPlants, plantingDays, plantInf
             </button>
           ))}
         </div>
+
+        {/* ── Outdated banner ── */}
+        {isOutdated && (
+          <div className={styles.outdatedBanner}>
+            <span className={styles.outdatedText}>
+              Some plants were removed from the garden. The calendar may be outdated.
+            </span>
+            <button className={styles.outdatedBtn} onClick={onEditSettings}>
+              Regenerate
+            </button>
+          </div>
+        )}
 
         {/* ── New plants banner ── */}
         {newPlants.length > 0 && (

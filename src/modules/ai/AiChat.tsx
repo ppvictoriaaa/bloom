@@ -11,6 +11,7 @@ export const AiChat = () => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showHint, setShowHint] = useState(() => !localStorage.getItem('ai-chat-hint-seen'));
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -138,9 +139,16 @@ export const AiChat = () => {
         </div>
       )}
 
+      {showHint && !open && (
+        <div className={styles.hint}>
+          <p className={styles.hintText}>Ask your AI garden assistant about plant care, where to plant, and more!</p>
+          <button className={styles.hintClose} onClick={() => { setShowHint(false); localStorage.setItem('ai-chat-hint-seen', '1'); }}>Got it</button>
+        </div>
+      )}
+
       <button
         className={`${styles.fab} ${open ? styles.fabOpen : ''}`}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => { setOpen((o) => !o); setShowHint(false); localStorage.setItem('ai-chat-hint-seen', '1'); }}
         title="Garden Assistant"
       >
         {open ? '✕' : '🌱'}

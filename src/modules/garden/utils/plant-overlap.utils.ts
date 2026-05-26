@@ -92,6 +92,26 @@ export const getViolatingIds = (placedPlants: PlacedPlant[]): Set<string> => {
   return violated;
 };
 
+// Returns Map<plant.id, display names of plants it conflicts with>
+export const getViolations = (placedPlants: PlacedPlant[]): Map<string, string[]> => {
+  const violations = new Map<string, string[]>();
+  for (let i = 0; i < placedPlants.length; i++) {
+    for (let j = i + 1; j < placedPlants.length; j++) {
+      const a = getPlantBounds(placedPlants[i]);
+      const b = getPlantBounds(placedPlants[j]);
+      if (boundsOverlap(a, b, getRequiredGap(a, b))) {
+        const nameA = placedPlants[i].customName ?? placedPlants[i].name;
+        const nameB = placedPlants[j].customName ?? placedPlants[j].name;
+        if (!violations.has(placedPlants[i].id)) violations.set(placedPlants[i].id, []);
+        if (!violations.has(placedPlants[j].id)) violations.set(placedPlants[j].id, []);
+        violations.get(placedPlants[i].id)!.push(nameB);
+        violations.get(placedPlants[j].id)!.push(nameA);
+      }
+    }
+  }
+  return violations;
+};
+
 // Scans candidate positions (snapped to cell grid) and returns nearest valid one
 export const findFreePosition = (
   plant: Pick<PlacedPlant, 'count' | 'plantsPerRow' | 'spacing' | 'plantId' | 'category'> & {

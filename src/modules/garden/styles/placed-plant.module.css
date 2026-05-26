@@ -14,7 +14,7 @@
   position: absolute;
   top: 2px;
   left: 3px;
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   color: var(--color-plant-text);
   background: rgba(244, 240, 232, 0.95);
@@ -38,8 +38,8 @@
 .removeButton {
   position: absolute;
   bottom: 2px;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   border: none;
   border-radius: 4px;
   background: rgba(244, 240, 232, 0.92);
@@ -60,7 +60,7 @@
 }
 
 .removeButton {
-  right: 22px;
+  right: 28px;
 }
 
 .area:hover .editButton,
@@ -94,15 +94,15 @@
 
 .warningBadge {
   position: absolute;
-  bottom: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
+  bottom: 8px;
+  left: 8px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--color-warning-bg);
   border: 1px solid var(--color-warning-border);
   color: var(--color-warning-text);
-  font-size: var(--font-size-2xs);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   display: flex;
   align-items: center;
@@ -137,8 +137,9 @@
   z-index: 7;
 }
 
-.resizeHandleTR { top:    0; right: 0; cursor: nesw-resize; }
-.resizeHandleTL { top:    0; left:  0; cursor: nwse-resize; }
+.resizeHandleTR { top:    0; right:  0; cursor: nesw-resize; }
+.resizeHandleTL { top:    0; left:   0; cursor: nwse-resize; }
+.resizeHandleBL { bottom: 0; left:   0; cursor: nesw-resize; }
 
 .resizeHandle::after {
   content: '';
@@ -148,8 +149,9 @@
   border-radius: 1px;
 }
 
-.resizeHandleTR::after { top:    2px; right: 2px; border-right:  2px solid var(--color-primary); border-top:    2px solid var(--color-primary); }
-.resizeHandleTL::after { top:    2px; left:  2px; border-left:   2px solid var(--color-primary); border-top:    2px solid var(--color-primary); }
+.resizeHandleTR::after { top:    2px; right:  2px; border-right:  2px solid var(--color-primary); border-top:    2px solid var(--color-primary); }
+.resizeHandleTL::after { top:    2px; left:   2px; border-left:   2px solid var(--color-primary); border-top:    2px solid var(--color-primary); }
+.resizeHandleBL::after { bottom: 2px; left:   2px; border-left:   2px solid var(--color-primary); border-bottom: 2px solid var(--color-primary); }
 
 .area:hover .resizeHandle {
   opacity: 1;

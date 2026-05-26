@@ -29,6 +29,8 @@ export interface CalendarSetupResult {
 
 interface Props {
   placedPlants: PlacedPlant[];
+  isEditing?: boolean;
+  initialValues?: CalendarSetupResult;
   onGenerate: (result: CalendarSetupResult) => Promise<void>;
   onClose: () => void;
 }
@@ -50,13 +52,13 @@ const VARIETY_LABELS: Record<string, string> = {
   winter: 'Winter',
 };
 
-export const CalendarSetupModal = ({ placedPlants, onGenerate, onClose }: Props) => {
-  const [cityInput, setCityInput] = useState('');
-  const [location, setLocation] = useState<GeocodedLocation | null>(null);
+export const CalendarSetupModal = ({ placedPlants, isEditing = false, initialValues, onGenerate, onClose }: Props) => {
+  const [cityInput, setCityInput] = useState(initialValues?.location.name ?? '');
+  const [location, setLocation] = useState<GeocodedLocation | null>(initialValues?.location ?? null);
   const [geocoding, setGeocoding] = useState(false);
   const [geocodeError, setGeocodeError] = useState('');
 
-  const [soilType, setSoilType] = useState<SoilType>('loamy');
+  const [soilType, setSoilType] = useState<SoilType>(initialValues?.soilType ?? 'loamy');
   const [plantSettings, setPlantSettings] = useState<PlantSetting[]>([]);
   const [loadingRules, setLoadingRules] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -76,15 +78,18 @@ export const CalendarSetupModal = ({ placedPlants, onGenerate, onClose }: Props)
     });
 
     setPlantSettings(
-      unique.map((p) => ({
-        plantId: p.id,
-        slug: p.slug,
-        name: p.customName ?? p.name,
-        variety: p.variety ?? '',
-        plantedAt: p.plantedAt ?? TODAY,
-        supportsVarieties: false,
-        allowedVarieties: [],
-      })),
+      unique.map((p) => {
+        const saved = initialValues?.plantSettings.find((s) => s.plantId === p.id);
+        return {
+          plantId: p.id,
+          slug: p.slug,
+          name: p.customName ?? p.name,
+          variety: saved?.variety ?? '',
+          plantedAt: saved?.plantedAt ?? TODAY,
+          supportsVarieties: false,
+          allowedVarieties: [],
+        };
+      }),
     );
 
     const slugs = unique.map((p) => p.slug);
@@ -152,7 +157,7 @@ export const CalendarSetupModal = ({ placedPlants, onGenerate, onClose }: Props)
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
 
         <div className={styles.header}>
-          <h2 className={styles.title}>Generate care calendar</h2>
+          <h2 className={styles.title}>{isEditing ? 'Edit care calendar settings' : 'Generate care calendar'}</h2>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
         </div>
 
@@ -165,7 +170,7 @@ export const CalendarSetupModal = ({ placedPlants, onGenerate, onClose }: Props)
               className={styles.input}
               placeholder="City name, e.g. Kyiv"
               value={cityInput}
-              onChange={(e) => setCityInput(e.target.value)}
+              onChange={(e) => { setCityInput(e.target.value); setLocation(null); setGeocodeError(''); }}
               onKeyDown={(e) => e.key === 'Enter' && handleGeocode()}
             />
             <button
@@ -277,9 +282,9 @@ export const CalendarSetupModal = ({ placedPlants, onGenerate, onClose }: Props)
             disabled={!location || generating || loadingRules}
           >
             {generating ? (
-              <><span className={styles.spinner} /> Generating…</>
+              <><span className={styles.spinner} /> {isEditing ? 'Regenerating…' : 'Generating…'}</>
             ) : (
-              'Generate calendar'
+              isEditing ? 'Regenerate calendar' : 'Generate calendar'
             )}
           </button>
         </div>

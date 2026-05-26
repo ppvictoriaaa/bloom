@@ -2,6 +2,16 @@
   min-height: 100vh;
   background: var(--color-bg);
   padding: 2rem;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
 }
 
 .loading {
@@ -13,13 +23,15 @@
 }
 
 .back {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
   background: none;
   border: none;
   color: var(--color-primary);
   font-size: var(--font-size-lg);
   cursor: pointer;
   padding: 0;
-  margin-bottom: 1.5rem;
 }
 
 .card {
@@ -203,7 +215,7 @@
 .notifSubtitle {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
-  margin: -0.75rem 0 1.25rem;
+  margin: 1rem 0 1.25rem;
 }
 
 .gardenList {

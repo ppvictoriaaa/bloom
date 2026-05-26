@@ -7,6 +7,8 @@ import type { PlotScale } from '../utils/grid.utils';
 import { SvgIcon } from '../../../components/ui/SvgIcon';
 import { icons } from '../../../components/ui/icons';
 import { theme } from '../../../styles/theme';
+import { getPlantBounds, isPlacementValid } from '../utils/plant-overlap.utils';
+import { toast } from '../../../store/toast.store';
 import styles from '../styles/placed-plant.module.css';
 
 interface Props {
@@ -15,7 +17,8 @@ interface Props {
   plotScale: PlotScale;
   plotWidthM: number;
   plotHeightM: number;
-  hasViolation: boolean;
+  violatingNames: string[];
+  allPlants: PlacedPlantType[];
   onEdit: (plant: PlacedPlantType) => void;
   onResize: (id: string, count: number, plantsPerRow: number, x: number, y: number) => void;
   onHover: (id: string | null) => void;
@@ -25,12 +28,10 @@ const DETAIL_THRESHOLD_PX = 10;
 const SHOW_ALL_THRESHOLD = 30;
 const MIN_BOX_PX = 24;
 
-const TOOLTIP_MESSAGE =
-  'Planting these plants too close may reduce growth, increase competition for water and nutrients, or raise the risk of disease.';
-const TOOLTIP_WIDTH = 214;
+const TOOLTIP_WIDTH = 220;
 const TOOLTIP_GAP = 8;
 
-const WarningBadge = () => {
+const WarningBadge = ({ names }: { names: string[] }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top?: number; bottom?: number } | null>(null);
 
@@ -49,6 +50,8 @@ const WarningBadge = () => {
     );
   };
 
+  const unique = [...new Set(names)];
+
   return (
     <>
       <div
@@ -66,7 +69,9 @@ const WarningBadge = () => {
             className={styles.warningTooltip}
             style={{ left: pos.left, top: pos.top, bottom: pos.bottom, width: TOOLTIP_WIDTH }}
           >
-            {TOOLTIP_MESSAGE}
+            <strong>Too close to: {unique.join(', ')}</strong>
+            <br />
+            Planting these plants too close may reduce growth, increase competition for water and nutrients, or raise the risk of disease.
           </div>,
           document.body,
         )}
@@ -86,7 +91,7 @@ interface ResizeOrigin {
   corner: Corner;
 }
 
-const CORNERS: Corner[] = ['tl', 'tr'];
+const CORNERS: Corner[] = ['tl', 'tr', 'bl'];
 
 export const PlacedPlant = ({
   plant,
@@ -94,7 +99,8 @@ export const PlacedPlant = ({
   plotScale,
   plotWidthM,
   plotHeightM,
-  hasViolation,
+  violatingNames,
+  allPlants,
   onEdit,
   onResize,
   onHover,
@@ -220,6 +226,19 @@ export const PlacedPlant = ({
 
     const newPlantsPerRow = Math.max(1, Math.round(snappedW / plantSnap));
     const newRows         = Math.max(1, Math.round(snappedH / plantSnap));
+
+    const newBounds = getPlantBounds({
+      ...plant,
+      x: snappedX,
+      y: snappedY,
+      count: newRows * newPlantsPerRow,
+      plantsPerRow: newPlantsPerRow,
+    });
+    if (!isPlacementValid(newBounds, allPlants, plant.id)) {
+      toast.error('Plants cannot overlap. Resize reverted.');
+      return;
+    }
+
     onResize(plant.id, newRows * newPlantsPerRow, newPlantsPerRow, snappedX, snappedY);
   };
 
@@ -300,7 +319,7 @@ export const PlacedPlant = ({
               </div>
             )}
 
-            {hasViolation && <WarningBadge />}
+            {violatingNames.length > 0 && <WarningBadge names={violatingNames} />}
           </>
         )}
 
