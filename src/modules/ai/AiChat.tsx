@@ -15,7 +15,7 @@ export const AiChat = () => {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const { histories, activeGardenId: savedGardenId, setActiveGarden, pushMessage } = useChatStore();
+  const { histories, activeGardenId: savedGardenId, pushMessage } = useChatStore();
   const uiActiveGardenId = useUiStore((s) => s.activeGardenId);
 
   const { data: gardens = [] } = useQuery({
@@ -76,23 +76,14 @@ export const AiChat = () => {
       {open && (
         <div className={styles.panel}>
           <div className={styles.header}>
-            <span className={styles.headerTitle}>🌱 Garden Assistant</span>
+            <div className={styles.headerLeft}>
+              <span className={styles.headerTitle}>🌱 Garden Assistant</span>
+              {activeGardenName && (
+                <span className={styles.headerGarden}>{activeGardenName}</span>
+              )}
+            </div>
             <button className={styles.closeBtn} onClick={() => setOpen(false)}>✕</button>
           </div>
-
-          {gardens.length > 1 && (
-            <div className={styles.gardenSelect}>
-              <select
-                value={activeGardenId ?? ''}
-                onChange={(e) => setActiveGarden(e.target.value)}
-                className={styles.select}
-              >
-                {gardens.map((g) => (
-                  <option key={g._id} value={g._id}>{g.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
 
           <div className={styles.messages}>
             {history.length === 0 && (

@@ -128,10 +128,21 @@
   flex-shrink: 0;
 }
 
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .headerTitle {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
+}
+
+.headerGarden {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
 }
 
 .closeBtn {
