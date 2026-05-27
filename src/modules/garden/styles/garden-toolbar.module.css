@@ -87,9 +87,15 @@
   opacity: 0.7;
 }
 
+.saveGroup {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .spinner {
-  display: inline-block;
-  flex-shrink: 0;
+  position: absolute;
+  left: -20px;
   width: 13px;
   height: 13px;
   border: 1.5px solid var(--color-border);
@@ -103,7 +109,8 @@
 }
 
 .checkmark {
-  flex-shrink: 0;
+  position: absolute;
+  right: -20px;
   width: 13px;
   height: 13px;
   fill: none;

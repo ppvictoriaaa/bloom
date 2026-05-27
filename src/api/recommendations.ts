@@ -1,9 +1,6 @@
-import axios from 'axios';
+import apiClient from './client';
 
-const recClient = axios.create({
-  baseURL: 'http://localhost:3006',
-  headers: { 'Content-Type': 'application/json' },
-});
+const recClient = apiClient;
 
 // ── Types ──────────────────────────────────────────────────────────────────
 

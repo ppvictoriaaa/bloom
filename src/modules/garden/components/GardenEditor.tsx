@@ -121,15 +121,30 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
     });
   }, [placedPlants, calendarData]);
 
+  const catalogImageBySlug = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const p of plants) {
+      if (p.imageUrl) map[p.slug] = p.imageUrl;
+    }
+    return map;
+  }, [plants]);
+
+  const freshImage = (slug: string) => catalogImageBySlug[slug];
+
+  const placedPlantsWithImages = useMemo(
+    () => placedPlants.map((p) => ({ ...p, imageUrl: freshImage(p.slug) })),
+    [placedPlants, catalogImageBySlug],
+  );
+
   const plantInfoBySlug = useMemo(() => {
     const map: Record<string, { name: string; imageUrl?: string }> = {};
     for (const p of placedPlants) {
       const key = p.customName ?? p.slug;
       if (map[key]) continue;
-      map[key] = { name: p.customName ?? p.name, imageUrl: p.imageUrl };
+      map[key] = { name: p.customName ?? p.name, imageUrl: catalogImageBySlug[p.slug] };
     }
     return map;
-  }, [placedPlants]);
+  }, [placedPlants, catalogImageBySlug]);
 
   const plantingDays = useMemo(() => {
     const map: Record<string, { name: string; imageUrl?: string }[]> = {};
@@ -140,10 +155,10 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
       if (seen.has(key)) continue;
       seen.add(key);
       if (!map[p.plantedAt]) map[p.plantedAt] = [];
-      map[p.plantedAt].push({ name: p.customName ?? p.name, imageUrl: p.imageUrl });
+      map[p.plantedAt].push({ name: p.customName ?? p.name, imageUrl: catalogImageBySlug[p.slug] });
     }
     return map;
-  }, [placedPlants]);
+  }, [placedPlants, catalogImageBySlug]);
 
   useEffect(() => {
     if (!activeGardenId) return;
@@ -430,7 +445,7 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
           onReminders={calendarData ? () => setShowReminderModal(true) : undefined}
         />
         <GardenGrid
-          placedPlants={placedPlants}
+          placedPlants={placedPlantsWithImages}
           plotConfig={plotConfig}
           onEditPlant={setEditingPlant}
           onResizePlant={(id, count, plantsPerRow, x, y) => updatePlant(id, { count, plantsPerRow, x, y })}
@@ -487,7 +502,7 @@ export const GardenEditor = ({ gardenId, onUnsavedStateChange, onCreated }: Prop
             slug: editingPlant.slug,
             category: editingPlant.category,
             color: editingPlant.color,
-            imageUrl: editingPlant.imageUrl,
+            imageUrl: freshImage(editingPlant.slug),
             x: editingPlant.x,
             y: editingPlant.y,
           }}

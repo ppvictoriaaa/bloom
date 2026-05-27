@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, startTransition } from 'react';
 import { useAuthStore } from '../../store/auth.store';
 import { useUiStore } from '../../store/ui.store';
 import { useProfile } from '../../hooks/useProfile';
@@ -73,12 +73,13 @@ export const HomePage = () => {
       });
 
     if (restoredTabs.length === 0) return;
-    setTabs(restoredTabs);
-
-    if (savedActiveGardenId) {
-      const active = restoredTabs.find((t) => t.gardenId === savedActiveGardenId);
-      if (active) setActiveTabId(active.tabId);
-    }
+    startTransition(() => {
+      setTabs(restoredTabs);
+      if (savedActiveGardenId) {
+        const active = restoredTabs.find((t) => t.gardenId === savedActiveGardenId);
+        if (active) setActiveTabId(active.tabId);
+      }
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
 
